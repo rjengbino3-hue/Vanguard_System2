@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard Analytics Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+    <header class="w-full bg-[#112240] h-20 flex items-center justify-between px-6 border-b border-[#1d5073] shrink-0">
+        <div class="flex items-center space-x-0">
+            <div class="h-15 w-15 bg-white rounded-full flex items-center justify-center border border-blue-400 shadow-sm overflow-hidden shrink-0">
+                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" alt="LTO Logo" class="h-full w-full object-cover p-0 transform scale-115">
+            </div>
+
+            <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
+            </div>
+            
+            <div class="leading-tight">
+                <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
+                <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
+            </div>
+        </div>
+
+        <div class="relative">
+            <button id="adminMenuButton" class="bg-white/95 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-white active:scale-[0.98] transition-all focus:outline-none">
+                <div class="bg-slate-200 text-slate-600 rounded-full h-7 w-7 flex items-center justify-center">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </div>
+                <span class="text-[#0b3c5d] font-bold text-xs">Admin User</span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-[#0b3c5d]/60 pl-0.5"></i>
+            </button>
+
+            <div id="adminDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50">
+                <a href="/settings/settings" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-[#0b3c5d] hover:bg-slate-50 transition-all">
+                    <i class="fa-solid fa-gear text-slate-400 w-4 text-center"></i>
+                    <span>Settings</span>
+                </a>
+                <div class="w-full h-px bg-slate-100 my-1"></div>
+                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </div>
+
+        <script>
+            const menuButton = document.getElementById('adminMenuButton');
+            const dropdown = document.getElementById('adminDropdown');
+            menuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                dropdown.classList.add('hidden');
+            });
+        </script>
+    </header>
+
+    <div class="w-full flex flex-1 overflow-hidden">
+        
+        <aside class="w-64 bg-[#112240] flex flex-col justify-between p-4 shrink-0">
+            <div class="space-y-2 mt-2">
+                <a href="/overview" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-table-columns text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Overview</span>
+                </a>
+                <a href="/logs/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-database text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Data Logs</span>
+                </a>
+                <a href="/trends/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-chart-line text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Trend and Metrics</span>
+                </a>
+                <a href="/report/" class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-file-invoice text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">History Report</span>
+                </a>
+                <a href="/cameras/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-camera text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Cameras</span>
+                </a>
+            </div>
+
+            <div class="space-y-2 mb-2 border-t border-slate-800/60 pt-4">
+                <a href="/settings/about" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-2 rounded-xl transition-all">
+                    <i class="fa-solid fa-info-circle text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">About</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-white p-8 overflow-y-auto">
+            
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <h2 class="text-[#0b347a] text-2xl font-black uppercase tracking-wider">Historical Violation Reports</h2>
+                    <p class="text-slate-400 text-xs font-semibold mt-1">Archived summaries and enforcement recommendations generated from daily monitoring activities.</p>
+                </div>
+                <div class="flex items-center space-x-3 text-xs font-bold text-[#0b3c5d]">
+                    <span class="text-slate-500 font-extrabold uppercase tracking-wider">Filter by Date:</span>
+                    <input type="date" id="reportDatePicker" class="w-40 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none shadow-sm text-[#0b3c5d]">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-8 items-start">
+                
+                <div class="col-span-6 space-y-6">
+                    
+                    <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)] flex items-center space-x-6">
+                        <div class="bg-[#0b3c5d] h-24 w-28 rounded-2xl flex items-center justify-center shadow-md">
+                            <i class="fa-solid fa-motorcycle text-white text-4xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-[#0b3c5d] font-black text-sm tracking-wide">Total Helmet Violation</h4>
+                            <div class="flex items-baseline space-x-2 mt-0.5">
+                                <span id="metricTotalCount" class="text-red-700 font-black text-6xl tracking-tight">0</span>
+                            </div>
+                            <p id="metricTimeSpan" class="text-slate-400 font-bold text-[10px] uppercase tracking-wider">since 12:00 A.M</p>
+                            <p id="metricComparisonTrend" class="text-red-600 font-black text-xs mt-1">0% vs Selected Date</p>
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)]">
+                        <h3 class="text-[#0b3c5d] font-black text-xs tracking-wide uppercase mb-2">Violation by Time of Day</h3>
+                        <div class="w-full h-56 relative mt-4">
+                            <canvas id="historyHourlyChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-span-6">
+                    <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)] space-y-4">
+                        <h3 class="text-[#0b3c5d] text-center font-black text-base tracking-wide border-b border-slate-100 pb-3">Enforcement Recommendation</h3>
+                        
+                        <h4 class="text-[#0b3c5d] font-black text-sm tracking-wide px-2 pt-1">Report Details</h4>
+                        
+                        <div class="text-xs font-semibold space-y-0.5 px-2">
+                            <div class="grid grid-cols-12 py-2.5 border-b border-slate-100/60 items-center">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Date</span>
+                                <span id="detailDate" class="col-span-7 text-[#0b3c5d] font-bold">---</span>
+                            </div>
+                            <div class="grid grid-cols-12 py-2.5 border-b border-slate-100/60 items-start">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Peak Location</span>
+                                <span id="detailPeakLocation" class="col-span-7 text-[#0b3c5d] font-bold leading-normal">---</span>
+                            </div>
+                            <div class="grid grid-cols-12 py-2.5 border-b border-slate-100/60 items-center">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Peak Time</span>
+                                <span id="detailPeakTime" class="col-span-7 text-[#0b3c5d] font-bold">---</span>
+                            </div>
+                            <div class="grid grid-cols-12 py-2.5 border-b border-slate-100/60 items-center">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Camera Node</span>
+                                <span id="detailCamera" class="col-span-7 text-[#0b3c5d] font-bold font-mono">---</span>
+                            </div>
+                            <div class="grid grid-cols-12 py-2.5 border-b border-slate-100/60 items-center">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Monitoring Duration</span>
+                                <span id="detailDuration" class="col-span-7 text-[#0b3c5d] font-bold">24 Hours Active</span>
+                            </div>
+                            <div class="grid grid-cols-12 py-2.5 border-b border-slate-100/60 items-center">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Peak Logged Count</span>
+                                <span id="detailPeakCount" class="col-span-7 text-[#0b3c5d] font-bold">0 violations</span>
+                            </div>
+                            <div class="grid grid-cols-12 py-2.5 items-center">
+                                <span class="col-span-5 text-[#0b3c5d]/70">Trend Analysis</span>
+                                <span id="detailTrendStatus" class="col-span-7 text-[#0b3c5d] font-bold">Stable</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const rawDatabaseLogs = {{ logs | tojson | safe if logs else '[]' }};
+    </script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const datePicker = document.getElementById('reportDatePicker');
+            const graphCanvas = document.getElementById('historyHourlyChart');
+            let chartInstance = null;
+
+            // Set up fallback today string (YYYY-MM-DD)
+            const todayStr = new Date().toISOString().split('T')[0];
+            datePicker.value = todayStr;
+
+            // Hourly structural array setup
+            const hoursLabels = ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'];
+
+            function updateReportView() {
+                const selectedDate = datePicker.value;
+                if (!selectedDate) return;
+
+                // Format friendly display date
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('detailDate').textContent = new Date(selectedDate).toLocaleDateString('en-US', options);
+
+                // 1. Separate logs for selected day vs previous day (to compute trend lines)
+                const targetDateObj = new Date(selectedDate);
+                targetDateObj.setDate(targetDateObj.getDate() - 1);
+                const previousDateStr = targetDateObj.toISOString().split('T')[0];
+
+                const currentDayLogs = rawDatabaseLogs.filter(log => log.timestamp && log.timestamp.substring(0, 10) === selectedDate);
+                const priorDayLogs = rawDatabaseLogs.filter(log => log.timestamp && log.timestamp.substring(0, 10) === previousDateStr);
+
+                // 2. Map Violations directly to their Hourly Slots
+                const hourlyCounts = new Array(24).fill(0);
+                let peakHourIndex = 0;
+                let maxHourCount = 0;
+
+                // Map of location string frequencies
+                const locationMap = {};
+                // Map of device ID frequencies
+                const deviceMap = {};
+
+                currentDayLogs.forEach(log => {
+                    // Extract hour slot from timestamp (format assumed: "YYYY-MM-DDTHH:MM:SS" or similar)
+                    if(log.timestamp && log.timestamp.length >= 16) {
+                        const hour = parseInt(log.timestamp.substring(11, 13), 10);
+                        if(!isNaN(hour) && hour >= 0 && hour < 24) {
+                            hourlyCounts[hour]++;
+                        }
+                    }
+
+                    if (log.location) {
+                        locationMap[log.location] = (locationMap[log.location] || 0) + 1;
+                    }
+                    if (log.device_id) {
+                        deviceMap[log.device_id] = (deviceMap[log.device_id] || 0) + 1;
+                    }
+                });
+
+                // Find peak metrics
+                for(let i = 0; i < 24; i++) {
+                    if(hourlyCounts[i] > maxHourCount) {
+                        maxHourCount = hourlyCounts[i];
+                        peakHourIndex = i;
+                    }
+                }
+
+                let peakLocation = "N/A";
+                let maxLocCount = 0;
+                for (const [loc, count] of Object.entries(locationMap)) {
+                    if (count > maxLocCount) {
+                        maxLocCount = count;
+                        peakLocation = loc;
+                    }
+                }
+
+                let peakDevice = "N/A";
+                let maxDevCount = 0;
+                for (const [dev, count] of Object.entries(deviceMap)) {
+                    if (count > maxDevCount) {
+                        maxDevCount = count;
+                        peakDevice = dev;
+                    }
+                }
+
+                // 3. Render calculations to DOM Nodes
+                const totalCount = currentDayLogs.length;
+                document.getElementById('metricTotalCount').textContent = totalCount;
+                document.getElementById('detailPeakCount').textContent = `${maxHourCount} violations`;
+                document.getElementById('detailPeakLocation').textContent = peakLocation;
+                document.getElementById('detailCamera').textContent = peakDevice;
+
+                // Humanize the display hour index
+                const rawHour = peakHourIndex;
+                const startHourStr = hoursLabels[rawHour];
+                const endHourStr = hoursLabels[(rawHour + 1) % 24];
+                document.getElementById('detailPeakTime').textContent = totalCount > 0 ? `${startHourStr} - ${endHourStr}` : "N/A";
+
+                // 4. Trend Delta Logic Calculations
+                let trendText = "No previous data";
+                let comparisonText = "0% vs Previous Day";
+                if (priorDayLogs.length > 0) {
+                    const diff = totalCount - priorDayLogs.length;
+                    const pct = Math.round((diff / priorDayLogs.length) * 100);
+                    if (pct > 0) {
+                        trendText = `${pct}% Higher than yesterday`;
+                        comparisonText = `${pct}% Higher than previous days`;
+                        document.getElementById('metricComparisonTrend').className = "text-red-600 font-black text-xs mt-1";
+                    } else if (pct < 0) {
+                        trendText = `${Math.abs(pct)}% Lower than yesterday`;
+                        comparisonText = `${Math.abs(pct)}% Lower than previous days`;
+                        document.getElementById('metricComparisonTrend').className = "text-green-600 font-black text-xs mt-1";
+                    } else {
+                        trendText = "Equal volume to yesterday";
+                        comparisonText = "Stable volumes detected";
+                        document.getElementById('metricComparisonTrend').className = "text-slate-500 font-black text-xs mt-1";
+                    }
+                } else if (totalCount > 0) {
+                    trendText = "Initial recorded logs tracking";
+                    comparisonText = "No comparative records prior";
+                }
+                document.getElementById('metricComparisonTrend').textContent = trendText;
+                document.getElementById('detailTrendStatus').textContent = comparisonText;
+
+                // 5. Build/Refresh Chart Instance
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                // Smooth out chart limits depending on counts
+                const dynamicMax = Math.max(10, Math.ceil((Math.max(...hourlyCounts) + 5) / 5) * 5);
+
+                chartInstance = new Chart(graphCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: hoursLabels,
+                        datasets: [{
+                            data: hourlyCounts,
+                            backgroundColor: '#0284c7',
+                            hoverBackgroundColor: '#1d4ed8',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                titleFont: { family: 'Poppins', size: 11, weight: '700' },
+                                bodyFont: { family: 'Poppins', size: 12, weight: '900' },
+                                padding: 10,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) { return context.parsed.y + ' violations'; }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                min: 0, 
+                                max: dynamicMax,
+                                ticks: { color: '#94a3b8', font: { family: 'Poppins', size: 10 } },
+                                grid: { color: '#f1f5f9' }, 
+                                border: { display: false }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#000000',
+                                    font: { family: 'Poppins', weight: '700', size: 9 },
+                                    callback: function(val) {
+                                        const allowed = ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'];
+                                        const labelText = this.getLabelForValue(val);
+                                        return allowed.includes(labelText) ? labelText : '';
+                                    }
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Bind change hooks directly into calendar interface
+            datePicker.addEventListener('change', updateReportView);
+
+            // Seed primary load
+            updateReportView();
+        });
+    </script>
+</body>
+</html>

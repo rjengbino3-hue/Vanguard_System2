@@ -1,0 +1,15 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# System files
+desktop.ini
+.DS_Store
+
+.env

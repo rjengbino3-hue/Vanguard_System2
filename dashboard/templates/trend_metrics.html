@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard Analytics Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+    <header class="w-full bg-[#112240] h-20 flex items-center justify-between px-6 border-b border-[#1d5073] shrink-0">
+        <div class="flex items-center space-x-0">
+            <div class="h-15 w-15 bg-white rounded-full flex items-center justify-center border border-blue-400 shadow-sm overflow-hidden shrink-0">
+                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" alt="LTO Logo" class="h-full w-full object-cover p-0 transform scale-115">
+            </div>
+            <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
+            </div>
+            <div class="leading-tight">
+                <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
+                <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
+            </div>
+        </div>
+
+        <div class="relative">
+            <button id="adminMenuButton" class="bg-white/95 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-white active:scale-[0.98] transition-all focus:outline-none">
+                <div class="bg-slate-200 text-slate-600 rounded-full h-7 w-7 flex items-center justify-center">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </div>
+                <span class="text-[#0b3c5d] font-bold text-xs">Admin User</span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-[#0b3c5d]/60 pl-0.5"></i>
+            </button>
+
+            <div id="adminDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50">
+                <a href="settings/settings" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-[#0b3c5d] hover:bg-slate-50 transition-all">
+                    <i class="fa-solid fa-gear text-slate-400 w-4 text-center"></i>
+                    <span>Settings</span>
+                </a>
+                <div class="w-full h-px bg-slate-100 my-1"></div>
+                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="w-full flex flex-1 overflow-hidden">
+        <aside class="w-64 bg-[#112240] flex flex-col justify-between p-4 shrink-0">
+            <div class="space-y-2 mt-2">
+                <a href="/overview" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-table-columns text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Overview</span>
+                </a>
+                <a href="/logs/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-database text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Data Logs</span>
+                </a>
+                <a href="/trends/" class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-chart-line text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Trend and Metrics</span>
+                </a>
+                <a href="/report/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-file-invoice text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">History Report</span>
+                </a>
+                <a href="/cameras/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-camera text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Cameras</span>
+                </a>
+            </div>
+            <div class="space-y-2 mb-2 border-t border-slate-800/60 pt-4">
+                <a href="/settings/about" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-2 rounded-xl transition-all">
+                    <i class="fa-solid fa-info-circle text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">About</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-white p-8 overflow-y-auto space-y-8">
+            <div>
+                <h2 class="text-[#0b347a] text-2xl font-black uppercase tracking-wider">Statistical Trends and Metrics</h2>
+                <p class="text-slate-400 text-xs font-semibold mt-1">Statistical visualization of peak violation time frames</p>
+            </div>
+
+            <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)]">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-[#0b3c5d] font-black text-base tracking-wide">Violation by Time of Day</h3>
+                    <div class="flex items-center space-x-3 text-xs font-bold text-[#0b3c5d]">
+                        <span class="text-[#112747] font-extrabold uppercase tracking-wider">Filter by Date:</span>
+                        <input type="date" id="dateFilterInput" value="{{ default_date }}" class="w-40 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none text-[#0b3c5d]">
+                    </div>
+                </div>
+                <div class="w-full h-72 relative mt-4">
+                    <canvas id="timeOfDayChartWidescreen"></canvas>
+                </div>
+            </div>
+
+            <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)]">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-[#0b3c5d] font-black text-base tracking-wide">Violation By Day</h3>
+                    <div class="flex items-center space-x-3 text-xs font-bold text-[#0b3c5d]">
+                        <span class="text-[#112747] font-extrabold uppercase tracking-wider">Filter by Week:</span>
+                        <input type="week" id="weekFilterInput" class="w-44 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none text-[#0b3c5d]">
+                    </div>
+                </div>
+                <div class="w-full h-72 relative mt-4">
+                    <canvas id="dayOfWeekChartWidescreen"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Dropdown interactive system context block
+        const menuButton = document.getElementById('adminMenuButton');
+        const dropdown = document.getElementById('adminDropdown');
+        menuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', () => dropdown.classList.add('hidden'));
+
+        window.addEventListener('load', () => {
+            const serverHourlyData = {{ hourly_data | tojson }};
+            const serverTrendLabels = {{ trend_labels | tojson }};
+            const serverTrendData = {{ trend_data | tojson }};
+
+            const baseChartConfig = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleFont: { family: 'Poppins', size: 11, weight: '700' },
+                        bodyFont: { family: 'Poppins', size: 12, weight: '900' },
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) { return context.parsed.y + ' violations'; }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: '#94a3b8', font: { family: 'Poppins', size: 10, weight: '700' } },
+                        grid: { color: '#f1f5f9' }, border: { display: false }
+                    },
+                    x: {
+                        ticks: { color: '#475569', font: { family: 'Poppins', weight: '700', size: 9 } },
+                        grid: { display: false }
+                    }
+                }
+            };
+
+            // --- BAR CHART RENDERING CORE ---
+            const barCtx = document.getElementById('timeOfDayChartWidescreen');
+            let hourlyBarChart = null;
+            if (barCtx) {
+                hourlyBarChart = new Chart(barCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'],
+                        datasets: [{
+                            data: serverHourlyData,
+                            backgroundColor: '#0284c7',
+                            hoverBackgroundColor: '#1d4ed8',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: baseChartConfig
+                });
+            }
+
+            // --- LINE CHART RENDERING CORE ---
+            const lineCtx = document.getElementById('dayOfWeekChartWidescreen');
+            let dailyLineChart = null;
+            if (lineCtx) {
+                dailyLineChart = new Chart(lineCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: serverTrendLabels,
+                        datasets: [{
+                            data: serverTrendData,
+                            borderColor: '#1d4ed8',
+                            borderWidth: 2.5,
+                            backgroundColor: 'rgba(29, 78, 216, 0.05)',
+                            fill: true,
+                            pointBackgroundColor: '#0284c7',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            tension: 0.2
+                        }]
+                    },
+                    options: baseChartConfig
+                });
+            }
+
+            // --- ASYNCHRONOUS LIVE FILTER ACTION TRIGGER SCRIPT ---
+            const dateInput = document.getElementById('dateFilterInput');
+            const weekInput = document.getElementById('weekFilterInput');
+
+            function updateCharts() {
+                const dateVal = dateInput.value;
+                const weekVal = weekInput.value;
+
+                // Build query URL parameters dynamically
+                let url = `/trends/data?`;
+                if (dateVal) url += `date=${dateVal}&`;
+                if (weekVal) url += `week=${weekVal}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) return;
+
+                        // Update Bar Graph safely
+                        if (hourlyBarChart && data.hourly_data) {
+                            hourlyBarChart.data.datasets[0].data = data.hourly_data;
+                            hourlyBarChart.update();
+                        }
+
+                        // Update Line Graph safely
+                        if (dailyLineChart && data.trend_labels && data.trend_data) {
+                            dailyLineChart.data.labels = data.trend_labels;
+                            dailyLineChart.data.datasets[0].data = data.trend_data;
+                            dailyLineChart.update();
+                        }
+                    })
+                    .catch(err => console.error("Error updates metrics via filter pipelines:", err));
+            }
+
+            // Bind update processes across input event handlers
+            dateInput.addEventListener('change', updateCharts);
+            weekInput.addEventListener('change', updateCharts);
+        });
+    </script>
+</body>
+</html>

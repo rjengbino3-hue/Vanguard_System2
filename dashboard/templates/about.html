@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard Analytics Portal - About</title>
+    <!-- Tailwind Engine Link -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Vector Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- ==========================================================================
+         TOP NAV HEADER BAR (Pasted Exact Asset Schema)
+         ========================================================================== -->
+    <header class="w-full bg-[#112240] h-20 flex items-center justify-between px-6 border-b border-[#1d5073] shrink-0">
+        <div class="flex items-center space-x-0">
+            <!-- 1. LTO Circular Brand Frame -->
+            <div class="h-15 w-15 bg-white rounded-full flex items-center justify-center border border-blue-400 shadow-sm overflow-hidden shrink-0">
+                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" alt="LTO Logo" class="h-full w-full object-cover p-0 transform scale-115">
+            </div>
+
+            <!-- 2. Vanguard Logo Frame -->
+            <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
+            </div>
+            
+            <div class="leading-tight">
+                <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
+                <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
+            </div>
+        </div>
+
+       <!-- Admin Profile Button -->
+    <div class="relative">
+    <button id="adminMenuButton" class="bg-white/95 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-white active:scale-[0.98] transition-all focus:outline-none">
+        <div class="bg-slate-200 text-slate-600 rounded-full h-7 w-7 flex items-center justify-center">
+            <i class="fa-solid fa-user text-sm"></i>
+        </div>
+        <span class="text-[#0b3c5d] font-bold text-xs">Admin User</span>
+        <i class="fa-solid fa-chevron-down text-[10px] text-[#0b3c5d]/60 pl-0.5"></i>
+    </button>
+
+    <div id="adminDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50">
+        
+        <a href="/settings/settings" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-[#0b3c5d] hover:bg-slate-50 transition-all">
+            <i class="fa-solid fa-gear text-slate-400 w-4 text-center"></i>
+            <span>Settings</span>
+        </a>
+        
+        <div class="w-full h-px bg-slate-100 my-1"></div>
+        
+        <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+            <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+            <span>Log Out</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    const menuButton = document.getElementById('adminMenuButton');
+    const dropdown = document.getElementById('adminDropdown');
+
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+    });
+
+    // Close the panel automatically if the admin clicks away on the screen
+    document.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+    });
+</script>
+
+    </header>
+
+    <!-- CORE INTERFACE SPLIT SURFACE -->
+    <div class="w-full flex flex-1 overflow-hidden">
+        
+        <!-- ==========================================================================
+             SIDEBAR CONTAINER PANEL (With About set to Active State)
+             ========================================================================== -->
+    <aside class="w-64 bg-[#112240] flex flex-col justify-between p-4 shrink-0">
+    <div class="space-y-2 mt-2">
+        <a href="/overview" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+            <i class="fa-solid fa-table-columns text-lg w-6 text-center"></i>
+            <span class="font-bold text-sm tracking-wide">Overview</span>
+        </a>
+        <a href="/logs/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+            <i class="fa-solid fa-database text-lg w-6 text-center"></i>
+            <span class="font-bold text-sm tracking-wide">Data Logs</span>
+        </a>
+        <a href="/trends/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+            <i class="fa-solid fa-chart-line text-lg w-6 text-center"></i>
+            <span class="font-bold text-sm tracking-wide">Trend and Metrics</span>
+        </a>
+        <a href="/report/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+            <i class="fa-solid fa-file-invoice text-lg w-6 text-center"></i>
+            <span class="font-bold text-sm tracking-wide">History Report</span>
+        </a>
+        <a href="/cameras/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+            <i class="fa-solid fa-camera text-lg w-6 text-center"></i>
+            <span class="font-bold text-sm tracking-wide">Cameras</span>
+        </a>
+    </div>
+
+    <div class="space-y-2 mb-2 border-t border-slate-800/60 pt-4">
+        <a href="/settings/about" class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
+            <i class="fa-solid fa-info-circle text-lg w-6 text-center"></i>
+            <span class="font-bold text-sm tracking-wide">About</span>
+        </a>
+    </div>
+</aside>
+
+        <!-- ==========================================================================
+             MAIN APPLICATION VIEW CONTENT (about.html page payload)
+             ========================================================================== -->
+        <main class="flex-1 h-full overflow-y-auto bg-[#f8fafc] p-8 pb-24">
+            <div class="max-w-6xl mx-auto space-y-6">
+                
+                <!-- Section Summary Title -->
+                <div>
+                    <h2 class="text-[#0b3c5d] font-black text-2xl tracking-wide uppercase">PROJECT VANGUARD FRAMEWORK OVERVIEW</h2>
+                    <p class="text-slate-400 text-xs font-semibold tracking-wide mt-0.5">Technical specifications, system documentation, and development architecture records</p>
+                </div>
+
+                <!-- Comprehensive Information Frame Card -->
+                <div class="bg-[#fbfeff] border border-slate-100 rounded-[2.5rem] p-8 shadow-[0_15px_50px_rgba(1,1,1,0.075)] space-y-8">
+                    
+                    <!-- Branding Sub-Row Module (Brings V and ANGUARD tight together) -->
+                    <div class="flex flex-col lg:flex-row gap-6 items-center justify-between">
+                        <div class="flex items-center space-x-1 shrink-0">
+                            <span class="text-[#3871c1] font-black text-2xl tracking-wider uppercase pr-1">PROJECT</span>
+                            <div class="h-20 w-20 flex items-center justify-center shrink-0 -mr-4 -ml-2">
+                                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
+                            </div>
+                            <span class="text-[#0b3c5d] font-black text-2xl tracking-tight uppercase">ANGUARD</span>
+                        </div>
+
+                        <!-- System Core Briefing -->
+                        <div class="w-full lg:w-7/12 bg-[#f5fcff] border border-slate-100 rounded-2xl p-5 text-slate-600 font-medium text-xs md:text-sm leading-relaxed">
+                            Project VanGuard is an automated, privacy-preserving traffic analytics system developed for Digos City. It uses an AI-powered edge device to detect helmetless motorcycle riders in real time.
+                        </div>
+                    </div>
+
+                    <!-- Tech Feature Column Matrix -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Module 1 -->
+                        <div class="border border-slate-100 bg-[#f5fcff] rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-[#0b3c5d] font-black text-lg tracking-wide mb-3">Edge Computing Unit</h3>
+                                <p class="text-slate-500 font-medium text-xs md:text-sm leading-relaxed">Handles all detection and analysis directly on the device itself.</p>
+                            </div>
+                        </div>
+                        <!-- Module 2 -->
+                        <div class="bg-[#0b3c5d] rounded-3xl p-6 shadow-md flex flex-col justify-between text-white">
+                            <div>
+                                <h3 class="font-black text-lg tracking-wide mb-3">Optical Sensor</h3>
+                                <p class="text-white/80 font-medium text-xs md:text-sm leading-relaxed">A weather-resistant, high-definition camera designed to capture clear traffic feeds across designated lanes.</p>
+                            </div>
+                        </div>
+                        <!-- Module 3 -->
+                        <div class="border border-slate-100 bg-[#f5fcff] rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-[#0b3c5d] font-black text-lg tracking-wide mb-3">Data Sync</h3>
+                                <p class="text-slate-500 font-medium text-xs md:text-sm leading-relaxed">Violation records including count, time, and location are automatically saved and transmitted to the central monitoring dashboard.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layout Segment: Mission and Vision Overview -->
+                    <div class="space-y-6">
+                        <!-- Mission Card Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                            <div class="lg:col-span-8 bg-[#f5fcff] border border-slate-100 rounded-3xl p-6 md:p-8">
+                                <h3 class="text-[#0b3c5d] font-black text-xl tracking-wide uppercase mb-3">MISSION</h3>
+                                <p class="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">Our goal is to combine embedded systems and computer vision to make the roadways of Digos City safer. By providing reliable compliance tracking and trend forecasting, this platform helps optimize traffic deployment and encourages responsible riding habits.</p>
+                            </div>
+                            <div class="lg:col-span-4 h-40 rounded-3xl overflow-hidden border-4 border-[#0b3c5d] shadow-md">
+                                <img src="{{ url_for('static', filename='assets/about2.png') }}" alt="Traffic Camera Action View" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+
+                        <!-- Vision Card Section (Fixed Title Spelling Bug) -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                            <div class="lg:col-span-4 h-40 rounded-3xl overflow-hidden border-4 border-slate-200 shadow-sm order-2 lg:order-1">
+                                <img src="{{ url_for('static', filename='assets/about3.png') }}" alt="Traffic Flow View" class="w-full h-full object-cover">
+                            </div>
+                            <div class="lg:col-span-8 bg-[#f5fcff] border border-slate-100 rounded-3xl p-6 md:p-8 order-1 lg:order-2">
+                                <h3 class="text-[#0b3c5d] font-black text-xl tracking-wide uppercase mb-3">VISION</h3>
+                                <p class="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">We envision a smarter, data-driven traffic culture where modern technology seamlessly protects every motorist, significantly reducing road accidents and inspiring safer riding habits across the region.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+</body>
+</html>

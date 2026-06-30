@@ -1,0 +1,10 @@
+{
+  "labels": [
+    "unlabeled",
+    "ebike_bicycle",
+    "invalid_helmet",
+    "motorcycle",
+    "no_helmet_rider",
+    "with_helmet_rider"
+  ]
+}

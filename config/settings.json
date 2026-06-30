@@ -1,0 +1,77 @@
+Settings.json
+
+{
+  "device": {
+    "device_id": "cam001"
+  },
+  "locations": [
+    {
+      "id": 1,
+      "name": "Lapu-Lapu",
+      "latitude": 6.74603,
+      "longitude": 125.3445
+    },
+    {
+      "id": 2,
+      "name": "Roxas Ext.",
+      "latitude": 6.74954,
+      "longitude": 125.3529
+    },
+    {
+      "id": 3,
+      "name": "Ramon Magsaysay",
+      "latitude": 6.7453,
+      "longitude": 125.3569
+    }
+  ],
+  "model": {
+    "hef_path": "models/VANGUARD.hef",
+    "nms_config_path": "models/nms_layer_config.json",
+    "labels_path": "config/labels.json",
+    "confidence_threshold": 0.55,
+    "iou_threshold": 0.45
+  },
+  "database": {
+    "db_name": "data/vanguard_system.db"
+  },
+  "video": {
+    "source": "rpi",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "hflip": false,
+    "vflip": false
+  },
+  "analytics": {
+    "virtual_line_y": 0.6,
+    "line_crossing_enabled": false,
+    "debug_decisions": true,
+
+    "min_passenger_count": 1,
+    "duplicate_cooldown_seconds": 30,
+    "object_memory_seconds": 60,
+
+    "fallback_iou_threshold": 0.12,
+    "fallback_center_distance_threshold": 0.18,
+    "fallback_size_similarity": 0.4,
+
+    "recent_event_suppression_seconds": 3.0,
+    "recent_event_distance_threshold": 0.2,
+    "recent_event_size_similarity": 0.45,
+
+    "min_overlap_ratio": 0.08,
+    "near_distance_threshold": 0.15,
+
+    "motorcycle_label": "motorcycle",
+    "excluded_vehicle_labels": [
+      "ebike_bicycle"
+    ],
+    "violation_rider_labels": [
+      "no_helmet_rider",
+      "invalid_helmet"
+    ],
+    "compliant_rider_labels": [
+      "with_helmet_rider"
+    ]
+  }
+}

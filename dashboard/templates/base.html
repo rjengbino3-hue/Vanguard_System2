@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project VanGuard - Login</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            /* Semi-transparent blue overlay on top of the background image */
+            background: 
+                        url("{{ url_for('static', filename='assets/bg.png') }}");
+            background-size: cover;
+            position: relative;
+            padding: 40px 60px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* --- Left Content Section --- */
+        .left-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            max-width: 50%;
+            color: #ffffff;
+            z-index: 1;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+        }
+
+        .brand-text {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Placeholder for Left Header Logo */
+        .brand-logo-img {
+            width: 100px;
+            height: auto;
+            object-fit: contain;
+            margin-right: -20px;
+        }
+
+        .info-section {
+            margin-bottom: 40px;
+        }
+
+        .main-headline {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            line-height: 1.3;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .description-wrapper {
+            display: flex;
+            align-items: stretch;
+            gap: 15px;
+        }
+
+        .vertical-accent-line {
+            width: 6px;
+            background-color: #ffffff;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .description-text {
+            font-size: 13.5px;
+            line-height: 1.5;
+            font-weight: 400;
+            opacity: 0.9;
+            text-align: justify;
+        }
+
+        /* --- Right Portal Login Card --- */
+        .right-portal {
+            width: 500px;
+            background-color: #fbfcff;
+            border-radius: 20px;
+            padding: 85px 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+       .portal-logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;       
+    width: 100%;
+    /* Fix: Set a hard height for the logo area so it stops pushing the text down */
+    height: 70px;   
+    margin-top: -20px;    /* Pulls the logos up into the card's empty top padding */
+    margin-bottom: 25px;  /* Keeps a clean gap above the WELCOME text */
+}
+
+/* Specific size override for the round LTO logo */
+.login-card-lto {
+    width: 150px !important;   /* Slightly adjusted to fit the fixed 70px container cleanly */
+    height: 150px !important;  
+    object-fit: contain;
+    border-radius: 50%;
+    margin-right: -25px;
+}
+
+/* Specific size override for the V-shaped logo */
+.login-card-vanguard {
+    width: 150px !important;   
+    height: 150px !important;  
+    object-fit: contain;
+    margin-left: -25px;
+}
+        .welcome-title {
+            color: #0d3878;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .welcome-subtitle {
+            color: #576574;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 35px;
+        }
+
+        .form-container {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            width: 100%;
+        }
+
+        .form-group label {
+            display: block;
+            color: #0d3878;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dcdde1;
+            border-radius: 5px;
+            font-size: 13px;
+            background-color: #ffffff;
+            color: #2f3640;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input::placeholder {
+            color: #ced6e0;
+        }
+
+        .form-group input:focus {
+            border-color: #0d3878;
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: #0d3c7d;
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .login-btn:hover {
+            background-color: #092a59;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="left-content">
+            <div class="brand-logo-container">
+                <span class="brand-text">Project</span>
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" class="brand-logo-img" alt="VanGuard Logo">
+                <span class="brand-text">Anguard</span>
+            </div>
+
+            <div class="info-section">
+                <h1 class="main-headline">
+                    Monitor safely. Enforce fairly.<br>Protect every rider.
+                </h1>
+                <div class="description-wrapper">
+                    <div class="vertical-accent-line"></div>
+                    <p class="description-text">
+                        Dedicated to promoting road safety across Digos City. By identifying helmet compliance trends and logging vital traffic records, Vanguard supports law enforcement in keeping our public roads secure for every driver and passenger.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-portal">
+            <div class="portal-logos">
+                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" class="login-card-lto" alt="LTO Logo">
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" class="login-card-vanguard" alt="VanGuard Logo">
+            </div>
+            
+            <h2 class="welcome-title">Welcome!</h2>
+            <p class="welcome-subtitle">Sign in to access VanGuard Analytics Portal</p>
+
+            <form class="form-container" action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                   <input type="text" id="username" name="username" placeholder="Enter username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+                </div>
+
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+
+    </div>
+
+    
+</body>
+</html>

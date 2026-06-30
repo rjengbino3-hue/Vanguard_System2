@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard Analytics Portal - Cameras</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+    <header class="w-full bg-[#112240] h-20 flex items-center justify-between px-6 border-b border-[#1d5073] shrink-0">
+        <div class="flex items-center space-x-0">
+            <div class="h-15 w-15 bg-white rounded-full flex items-center justify-center border border-blue-400 shadow-sm overflow-hidden shrink-0">
+                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" alt="LTO Logo" class="h-full w-full object-cover p-0 transform scale-115">
+            </div>
+            <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
+            </div>
+            <div class="leading-tight">
+                <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
+                <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
+            </div>
+        </div>
+
+        <div class="relative">
+            <button id="adminMenuButton" class="bg-white/95 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-white active:scale-[0.98] transition-all focus:outline-none">
+                <div class="bg-slate-200 text-slate-600 rounded-full h-7 w-7 flex items-center justify-center">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </div>
+                <span class="text-[#0b3c5d] font-bold text-xs">Admin User</span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-[#0b3c5d]/60 pl-0.5"></i>
+            </button>
+            <div id="adminDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50">
+                <a href="/settings/settings" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-[#0b3c5d] hover:bg-slate-50 transition-all">
+                    <i class="fa-solid fa-gear text-slate-400 w-4 text-center"></i>
+                    <span>Settings</span>
+                </a>
+                <div class="w-full h-px bg-slate-100 my-1"></div>
+                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="w-full flex flex-1 overflow-hidden">
+        
+        <aside class="w-64 bg-[#112240] flex flex-col justify-between p-4 shrink-0">
+            <div class="space-y-2 mt-2">
+                <a href="/overview" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-table-columns text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Overview</span>
+                </a>
+                <a href="/logs/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-database text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Data Logs</span>
+                </a>
+                <a href="/trends/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-chart-line text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Trend and Metrics</span>
+                </a>
+                <a href="/report/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-file-invoice text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">History Report</span>
+                </a>
+                <a href="/cameras/" class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
+                    <i class="fa-solid fa-camera text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">Cameras</span>
+                </a>
+            </div>
+            <div class="space-y-2 mb-2 border-t border-slate-800/60 pt-4">
+                <a href="/settings/about" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-2 rounded-xl transition-all">
+                    <i class="fa-solid fa-info-circle text-lg w-6 text-center"></i>
+                    <span class="font-bold text-sm tracking-wide">About</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-white p-8 overflow-y-auto space-y-8">
+            <div>
+                <h2 class="text-[#0b3c5d] text-2xl font-black uppercase tracking-wider">Traffic Monitoring Device</h2>
+            </div>
+
+            <div class="flex items-center space-x-6">
+                <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)] w-72 h-36 flex flex-col justify-between relative">
+                    <h4 class="text-[#0b3c5d] font-black text-sm tracking-wide">Total Camera</h4>
+                    <span class="text-blue-900 font-black text-6xl tracking-tight leading-none">{{ total_cameras }}</span>
+                    <i class="fa-solid fa-camera text-slate-300 text-2xl absolute right-6 bottom-8"></i>
+                </div>
+
+                <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)] w-72 h-36 flex flex-col justify-between relative">
+                    <div>
+                        <h4 class="text-[#0b3c5d] font-black text-sm tracking-wide">Total Active Camera</h4>
+                        <span class="{% if active_count > 0 %}text-green-600{% else %}text-red-700{% endif %} font-black text-6xl tracking-tight leading-none mt-1 block">
+                            {{ active_count }}
+                        </span>
+                    </div>
+                    <span class="text-[#0b3c5d]/70 font-semibold text-[11px]">{{ offline_count }} offline</span>
+                    <i class="fa-solid fa-wifi text-slate-700 text-2xl absolute right-6 bottom-8 -translate-y-1/2"></i>
+                </div>
+            </div>
+
+            <div class="flex flex-row space-x-6 items-start">
+                
+                <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)] w-80">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                        <h3 class="text-[#0b3c5d] font-black text-sm tracking-wide">Camera 1 Status</h3>
+                        <span class="h-2.5 w-2.5 rounded-full block animate-pulse {% if cam001.status == 'online' %}bg-green-500{% else %}bg-red-600{% endif %}"></span>
+                    </div>
+                    <div class="text-xs font-semibold text-[#0b3c5d] space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Device ID</span>
+                            <span class="font-bold font-mono text-slate-700">cam001</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Location Deployment</span>
+                            <select onchange="updateDeviceLocation('cam001', this.value)" class="bg-slate-50 border border-slate-200 text-[#0b3c5d] font-bold py-1 px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/20 cursor-pointer">
+                                <option value="Lapu-lapu" {% if cam001.location == 'Lapu-lapu' %}selected{% endif %}>Lapu-lapu</option>
+                                <option value="Roxas Ext." {% if cam001.location == 'Roxas Ext.' %}selected{% endif %}>Roxas Ext.</option>
+                                <option value="Ramon Magsaysay Ave Station" {% if cam001.location == 'Ramon Magsaysay Ave Station' %}selected{% endif %}>Ramon Magsaysay</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Status</span>
+                            <span class="font-bold uppercase tracking-wider text-[10px] {% if cam001.status == 'online' %}text-green-600{% else %}text-slate-400{% endif %}">
+                                {{ cam001.status }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">FPS Stream</span>
+                            <span class="font-bold text-slate-700">{{ cam001.fps }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Total Detections</span>
+                            <span class="font-bold text-slate-700">{{ cam001.total_detections }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)] w-80">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                        <h3 class="text-[#0b3c5d] font-black text-sm tracking-wide">Camera 2 Status</h3>
+                        <span class="h-2.5 w-2.5 rounded-full block animate-pulse {% if cam002.status == 'online' %}bg-green-500{% else %}bg-red-600{% endif %}"></span>
+                    </div>
+                    <div class="text-xs font-semibold text-[#0b3c5d] space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Device ID</span>
+                            <span class="font-bold font-mono text-slate-700">cam002</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Location Deployment</span>
+                            <select onchange="updateDeviceLocation('cam002', this.value)" class="bg-slate-50 border border-slate-200 text-[#0b3c5d] font-bold py-1 px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/20 cursor-pointer">
+                                <option value="Lapu-lapu" {% if cam002.location == 'Lapu-lapu' %}selected{% endif %}>Lapu-lapu</option>
+                                <option value="Roxas Ext." {% if cam002.location == 'Roxas Ext.' %}selected{% endif %}>Roxas Ext.</option>
+                                <option value="Ramon Magsaysay Ave Station" {% if cam002.location == 'Ramon Magsaysay Ave Station' %}selected{% endif %}>Ramon Magsaysay</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Status</span>
+                            <span class="font-bold uppercase tracking-wider text-[10px] {% if cam002.status == 'online' %}text-green-600{% else %}text-slate-400{% endif %}">
+                                {{ cam002.status }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">FPS Stream</span>
+                            <span class="font-bold text-slate-700">{{ cam002.fps }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[#0b3c5d]/70">Total Detections</span>
+                            <span class="font-bold text-slate-700">{{ cam002.total_detections }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+    const menuButton = document.getElementById('adminMenuButton');
+    const dropdown = document.getElementById('adminDropdown');
+
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+    });
+
+    function updateDeviceLocation(deviceId, locationValue) {
+        fetch('/cameras/update_location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ device_id: deviceId, location: locationValue })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(`Configuration error: ${data.error || 'Failed to update location.'}`);
+            }
+        })
+        .catch(err => {
+            console.error('Error updating location:', err);
+            alert('Network error while updating location.');
+        });
+    }
+</script>
+
+</body>
+</html>

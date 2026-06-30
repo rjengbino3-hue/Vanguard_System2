@@ -1,0 +1,90 @@
+/* ==========================================================================
+   VANGUARD ANALYTICS PORTAL - GLOBAL STYLESHEET
+   ========================================================================== */
+
+/* 1. FONTS & CORE RESET */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+    --brand-dark: #0b3c5d;
+    --brand-navy: #112240;
+    --brand-blue: #1d4ed8;
+    --text-main: #0b3c5d;
+    --text-muted: #94a3b8;
+    --danger-red: #b91c1c;
+}
+
+body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background-color: #0c2d48; /* Matching your portal dashboard backdrop */
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 2. CUSTOM DASHBOARD SCROLLBARS */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 3. HARDWARE CAMERA STATUS LED ANIMATION */
+@keyframes status-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7);
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.4;
+        box-shadow: 0 0 0 6px rgba(185, 28, 28, 0);
+    }
+}
+
+.animate-pulse-led {
+    animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 4. FULL-SCREEN BACKGROUND IMAGE WITH GRADIENT OVERLAY */
+/* Updated to provide an integrated, high-contrast dark overlay layer directly behind text items */
+.bg-overlay-tint {
+    background-image:url("static/assets/LOGIN_BG.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 5. REUSABLE UTILITY CARD SHADOWS */
+.vanguard-card {
+    border: 1px solid #f1f5f9;
+    background-color: #ffffff;
+    border-radius: 1.5rem; /* 24px - rounded-3xl */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.015);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vanguard-card:hover {
+    box-shadow: 0 10px 30px rgba(11, 60, 93, 0.03);
+}
+
+/* 6. UI TEXT SELECTION DEFENSE */
+.select-none {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
