@@ -5,8 +5,8 @@ import uuid
 from supabase import create_client, Client
 
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nlxkzfgyruwkemkxrgxu.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_secret_yjYkETP2WOAilR1chqUuxw_K-fiCNpL")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 
 
@@ -119,3 +119,51 @@ def update_device_telemetry(device_id, status="online", fps=30):
 
     except Exception as error:
         print(f"[SUPABASE ERROR] Failed to update device telemetry: {error}")
+
+#diria nag start ang changes
+def fetch_all_rows(
+    table_name="violations",
+    columns="*",
+    page_size=500,
+    order_column="timestamp",
+    descending=True,
+):
+    """
+    Retrieve all rows from a Supabase table using pagination.
+
+    Requests rows in batches until the final, incomplete page is reached.
+    """
+    if page_size < 1:
+        raise ValueError("page_size must be greater than zero")
+
+    supabase = get_supabase()
+    all_rows = []
+    start = 0
+
+    while True:
+        query = supabase.table(table_name).select(columns)
+
+        if order_column:
+            query = query.order(order_column, desc=descending)
+
+        response = (
+            query
+            .range(start, start + page_size - 1)
+            .execute()
+        )
+
+        rows = response.data or []
+        all_rows.extend(rows)
+
+        # A short page means there are no more rows to retrieve.
+        if len(rows) < page_size:
+            break
+
+        start += page_size
+
+    print(
+        f"[SUPABASE] Retrieved {len(all_rows)} records "
+        f"from table '{table_name}'."
+    )
+
+    return all_rows

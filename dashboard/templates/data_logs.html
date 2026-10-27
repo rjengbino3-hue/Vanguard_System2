@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,27 +9,66 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* Keep large result sets inside their own scrollable areas. */
+        .table-scroll-container {
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: auto;
+            width: 100%;
+            position: relative;
+        }
+
+        .table-scroll-container table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        /* Keep table headers visible while scrolling. */
+        .table-scroll-container thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-scroll-container .filter-no-results-message td {
+            padding: 2rem;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body class="h-screen flex flex-col overflow-hidden select-none">
 
+    <!-- HEADER -->
     <header class="w-full bg-[#112240] h-20 flex items-center justify-between px-6 border-b border-[#1d5073] shrink-0">
         <div class="flex items-center space-x-0">
             <div class="h-15 w-15 bg-white rounded-full flex items-center justify-center border border-blue-400 shadow-sm overflow-hidden shrink-0">
-                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" alt="LTO Logo" class="h-full w-full object-cover p-0 transform scale-115">
+                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}"
+                     alt="LTO Logo"
+                     class="h-full w-full object-cover p-0 transform scale-115">
             </div>
 
             <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
-                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
+                <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}"
+                     alt="Vanguard Logo"
+                     class="h-full w-full object-contain">
             </div>
+
             <div class="leading-tight">
-                <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
-                <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
+                <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">
+                    Vanguard Analytics Portal
+                </h1>
+                <p class="text-white text-xs font-bold tracking-widest uppercase">
+                    Helmetless Violation Log and Traffic Management System
+                </p>
             </div>
         </div>
 
         <div class="relative">
-            <button id="adminMenuButton" class="bg-white/95 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-white active:scale-[0.98] transition-all focus:outline-none">
+            <button id="adminMenuButton"
+                    class="bg-white/95 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-white active:scale-[0.98] transition-all focus:outline-none">
                 <div class="bg-slate-200 text-slate-600 rounded-full h-7 w-7 flex items-center justify-center">
                     <i class="fa-solid fa-user text-sm"></i>
                 </div>
@@ -36,95 +76,124 @@
                 <i class="fa-solid fa-chevron-down text-[10px] text-[#0b3c5d]/60 pl-0.5"></i>
             </button>
 
-            <div id="adminDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50">
-                <a href="/settings/settings" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-[#0b3c5d] hover:bg-slate-50 transition-all">
+            <div id="adminDropdown"
+                 class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50">
+                <a href="/settings/settings"
+                   class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-[#0b3c5d] hover:bg-slate-50 transition-all">
                     <i class="fa-solid fa-gear text-slate-400 w-4 text-center"></i>
                     <span>Settings</span>
                 </a>
+
                 <div class="w-full h-px bg-slate-100 my-1"></div>
-                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+
+                <a href="/logout"
+                   class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
                     <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
                     <span>Log Out</span>
                 </a>
             </div>
         </div>
-
-        <script>
-            const menuButton = document.getElementById('adminMenuButton');
-            const dropdown = document.getElementById('adminDropdown');
-
-            menuButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', () => {
-                dropdown.classList.add('hidden');
-            });
-        </script>
     </header>
 
+    <!-- MAIN PAGE LAYOUT -->
     <div class="w-full flex flex-1 overflow-hidden">
+
+        <!-- SIDEBAR -->
         <aside class="w-64 bg-[#112240] flex flex-col justify-between p-4 shrink-0">
             <div class="space-y-2 mt-2">
-                <a href="/overview" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+
+                <a href="/overview"
+                   class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-table-columns text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Overview</span>
                 </a>
-                <a href="/logs" class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
+
+                <a href="/logs"
+                   class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
                     <i class="fa-solid fa-database text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Data Logs</span>
                 </a>
-                <a href="/trends/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+
+                <a href="/trends/"
+                   class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-chart-line text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Trend and Metrics</span>
                 </a>
-                <a href="/report/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+
+                <a href="/report/"
+                   class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-file-invoice text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">History Report</span>
                 </a>
-                <a href="/cameras/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
+
+                <a href="/cameras/"
+                   class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-camera text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Cameras</span>
                 </a>
             </div>
 
             <div class="space-y-2 mb-2 border-t border-slate-800/60 pt-4">
-                <a href="/settings/about" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-2 rounded-xl transition-all">
+                <a href="/settings/about"
+                   class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-2 rounded-xl transition-all">
                     <i class="fa-solid fa-info-circle text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">About</span>
                 </a>
             </div>
         </aside>
 
-        <main class="flex-1 bg-white p-8 overflow-y-auto space-y-8">
+        <!-- PAGE CONTENT -->
+        <main class="flex-1 min-w-0 bg-white p-8 overflow-y-auto space-y-8">
+
             <div>
-                <h2 class="text-[#0b347a] text-2xl font-black uppercase tracking-wider">Helmetless Violation Log</h2>
-                <p class="text-slate-400 text-xs font-semibold mt-1">Geographic and Temporal Metadata Log for Helmetless Incidents</p>
+                <h2 class="text-[#0b347a] text-2xl font-black uppercase tracking-wider">
+                    Helmetless Violation Log
+                </h2>
+                <p class="text-slate-400 text-xs font-semibold mt-1">
+                    Geographic and Temporal Metadata Log for Helmetless Incidents
+                </p>
             </div>
 
+            <!-- RECENT VIOLATION LOGS -->
             <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)]">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-[#0b3c5d] font-black text-lg tracking-wide w-48">Recent Violation Logs</h3>
-                    
-                    <div class="flex items-center space-x-6 text-xs font-bold text-[#0b3c5d]">
-                        <span class="text-slate-500 uppercase font-extrabold tracking-wider">Filter by:</span>
+
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <h3 class="text-[#0b3c5d] font-black text-lg tracking-wide">
+                        Recent Violation Logs
+                    </h3>
+
+                    <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-[#0b3c5d]">
+                        <span class="text-slate-500 uppercase font-extrabold tracking-wider">
+                            Filter by:
+                        </span>
+
                         <div class="flex items-center space-x-2">
-                            <label class="text-slate-400">Date:</label>
-                            <input type="date" id="logFilterDate" class="w-36 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none text-[#0b3c5d]">
+                            <label for="logFilterDate" class="text-slate-400">Date:</label>
+                            <input type="date"
+                                   id="logFilterDate"
+                                   class="w-36 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none text-[#0b3c5d]">
                         </div>
+
                         <div class="flex items-center space-x-2">
-                            <label class="text-slate-400">Location:</label>
-                            <input type="text" id="logFilterLocation" placeholder="Search location..." class="w-32 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
+                            <label for="logFilterLocation" class="text-slate-400">Location:</label>
+                            <input type="text"
+                                   id="logFilterLocation"
+                                   placeholder="Search location..."
+                                   class="w-32 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
                         </div>
+
                         <div class="flex items-center space-x-2">
-                            <label class="text-slate-400">Device ID:</label>
-                            <input type="text" id="logFilterDevice" placeholder="CAM-..." class="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
+                            <label for="logFilterDevice" class="text-slate-400">Device ID:</label>
+                            <input type="text"
+                                   id="logFilterDevice"
+                                   placeholder="CAM-..."
+                                   class="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
                         </div>
                     </div>
                 </div>
 
-                <div class="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                <!-- Independent scrollbar for violation logs -->
+                <div class="table-scroll-container border border-slate-100 rounded-xl shadow-sm">
                     <table class="w-full text-left border-collapse" id="logsTable">
                         <thead>
                             <tr class="bg-[#022d75] text-white font-bold text-xs tracking-wider">
@@ -135,15 +204,24 @@
                                 <th class="p-4 pr-6">Device ID</th>
                             </tr>
                         </thead>
+
                         <tbody class="divide-y divide-slate-100 text-[#0b3c5d] text-xs font-semibold">
                             {% if logs %}
                                 {% for log in logs %}
                                 <tr class="log-row hover:bg-slate-50/80 transition-colors">
-                                    <td class="p-4 pl-6 text-slate-500 data-date">{{ log.timestamp[:10] if log.timestamp else '' }}</td>
-                                    <td class="p-4 text-slate-500">{{ log.timestamp[11:16] if log.timestamp else '' }}</td>
-                                    <td class="p-4 font-bold text-slate-700">{{ log.tracking_id if log.tracking_id else 'N/A' }}</td>
+                                    <td class="p-4 pl-6 text-slate-500 data-date">
+                                        {{ log.timestamp[:10] if log.timestamp else '' }}
+                                    </td>
+                                    <td class="p-4 text-slate-500">
+                                        {{ log.timestamp[11:16] if log.timestamp else '' }}
+                                    </td>
+                                    <td class="p-4 font-bold text-slate-700">
+                                        {{ log.tracking_id if log.tracking_id else 'N/A' }}
+                                    </td>
                                     <td class="p-4 data-location">{{ log.location }}</td>
-                                    <td class="p-4 pr-6 text-slate-600 font-mono data-device">{{ log.device_id }}</td>
+                                    <td class="p-4 pr-6 text-slate-600 font-mono data-device">
+                                        {{ log.device_id }}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
@@ -158,28 +236,46 @@
                 </div>
             </div>
 
+            <!-- TOP VIOLATION HOTSPOTS -->
             <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)]">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-[#0b3c5d] font-black text-lg tracking-wide w-64">Top Violation Hotspot</h3>
-                    
-                    <div class="flex items-center space-x-6 text-xs font-bold text-[#0b3c5d]">
-                        <span class="text-slate-500 uppercase font-extrabold tracking-wider">Filter by:</span>
+
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <h3 class="text-[#0b3c5d] font-black text-lg tracking-wide">
+                        Top Violation Hotspot
+                    </h3>
+
+                    <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-[#0b3c5d]">
+                        <span class="text-slate-500 uppercase font-extrabold tracking-wider">
+                            Filter by:
+                        </span>
+
                         <div class="flex items-center space-x-2">
-                            <label class="text-slate-400">Date:</label>
-                            <input type="date" id="spotFilterDate" class="w-36 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none text-[#0b3c5d]">
+                            <label for="spotFilterDate" class="text-slate-400">Date:</label>
+                            <input type="date"
+                                   id="spotFilterDate"
+                                   class="w-36 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none text-[#0b3c5d]">
                         </div>
+
                         <div class="flex items-center space-x-2">
-                            <label class="text-slate-400">Location:</label>
-                            <input type="text" id="spotFilterLocation" placeholder="Search location..." class="w-32 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
+                            <label for="spotFilterLocation" class="text-slate-400">Location:</label>
+                            <input type="text"
+                                   id="spotFilterLocation"
+                                   placeholder="Search location..."
+                                   class="w-32 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
                         </div>
+
                         <div class="flex items-center space-x-2">
-                            <label class="text-slate-400">Device ID:</label>
-                            <input type="text" id="spotFilterDevice" placeholder="CAM-..." class="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
+                            <label for="spotFilterDevice" class="text-slate-400">Device ID:</label>
+                            <input type="text"
+                                   id="spotFilterDevice"
+                                   placeholder="CAM-..."
+                                   class="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none">
                         </div>
                     </div>
                 </div>
 
-                <div class="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                <!-- Independent scrollbar for hotspots -->
+                <div class="table-scroll-container border border-slate-100 rounded-xl shadow-sm">
                     <table class="w-full text-left border-collapse" id="hotspotsTable">
                         <thead>
                             <tr class="bg-[#022d75] text-white font-bold text-xs tracking-wider">
@@ -190,15 +286,24 @@
                                 <th class="p-4 pr-6">Device ID</th>
                             </tr>
                         </thead>
+
                         <tbody class="divide-y divide-slate-100 text-[#0b3c5d] text-xs font-semibold">
                             {% if hotspots %}
                                 {% for spot in hotspots %}
                                 <tr class="spot-row hover:bg-slate-50/80 transition-colors">
-                                    <td class="p-4 pl-6 text-slate-500 data-date">{{ spot.timestamp[:10] if spot.timestamp else '' }}</td>
-                                    <td class="p-4 font-black text-blue-600 dynamic-rank">{{ loop.index }}</td> 
+                                    <td class="p-4 pl-6 text-slate-500 data-date">
+                                        {{ spot.timestamp[:10] if spot.timestamp else '' }}
+                                    </td>
+                                    <td class="p-4 font-black text-blue-600 dynamic-rank">
+                                        {{ loop.index }}
+                                    </td>
                                     <td class="p-4 font-bold data-location">{{ spot.location }}</td>
-                                    <td class="p-4 font-black text-slate-700 bg-blue-50/50 text-center rounded-lg">{{ spot.count }}</td>
-                                    <td class="p-4 pr-6 text-slate-600 font-mono data-device">{{ spot.device_id }}</td>
+                                    <td class="p-4 font-black text-slate-700 bg-blue-50/50 rounded-lg text-left pl-6">
+                                        {{ spot.count }}
+                                    </td>
+                                    <td class="p-4 pr-6 text-slate-600 font-mono data-device">
+                                        {{ spot.device_id }}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
@@ -212,62 +317,100 @@
                     </table>
                 </div>
             </div>
+
         </main>
     </div>
 
     <script>
-        function setupTableFiltering(tableId, rowClass, dateInputId, locInputId, devInputId, isHotspotTable = false) {
+        // ADMIN DROPDOWN
+        const menuButton = document.getElementById('adminMenuButton');
+        const dropdown = document.getElementById('adminDropdown');
+
+        menuButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            dropdown.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', () => {
+            dropdown.classList.add('hidden');
+        });
+
+        // TABLE FILTERING
+        function setupTableFiltering(
+            tableId,
+            rowClass,
+            dateInputId,
+            locInputId,
+            devInputId,
+            isHotspotTable = false
+        ) {
             const dateIn = document.getElementById(dateInputId);
             const locIn = document.getElementById(locInputId);
             const devIn = document.getElementById(devInputId);
-            const rows = document.querySelectorAll(`.${rowClass}`);
             const tableBody = document.querySelector(`#${tableId} tbody`);
 
-            // Dynamically generate today's date string matching your table format (YYYY-MM-DD)
-            const todayStr = new Date().toISOString().split('T')[0];
+            const rows = Array.from(tableBody.querySelectorAll(`.${rowClass}`));
 
-            // Create a placeholder row for "No Results"
+            // Remove server-rendered empty placeholders.
+            const serverPlaceholder = tableBody.querySelector('.empty-placeholder');
+            if (serverPlaceholder) {
+                serverPlaceholder.remove();
+            }
+
             const noResultsPlaceholder = document.createElement('tr');
             noResultsPlaceholder.className = 'filter-no-results-message';
-            noResultsPlaceholder.innerHTML = `
-                <td colspan="5" class="p-8 text-center text-slate-400 font-medium italic bg-slate-50/50">
-                    <i class="fa-solid fa-circle-exclamation mr-2 text-amber-400"></i>
-                    No records found matching your specified filters.
-                </td>
-            `;
+
+            function showMessage(message, iconClass = 'fa-calendar-day') {
+                noResultsPlaceholder.innerHTML = `
+                    <td colspan="5"
+                        class="p-8 text-center text-slate-400 font-medium italic bg-slate-50/50">
+                        <i class="fa-solid ${iconClass} mr-2 text-amber-400"></i>
+                        ${message}
+                    </td>
+                `;
+
+                if (!tableBody.contains(noResultsPlaceholder)) {
+                    tableBody.appendChild(noResultsPlaceholder);
+                }
+            }
 
             function executeFilter() {
-                const dateVal = dateIn.value.trim(); // Removed toLowerCase() to cleanly match YYYY-MM-DD format
+                const dateVal = dateIn.value.trim();
                 const locVal = locIn.value.toLowerCase().trim();
                 const devVal = devIn.value.toLowerCase().trim();
 
-                // Remove any old "No Results" message if it exists
-                const existingNotice = tableBody.querySelector('.filter-no-results-message');
-                if (existingNotice) {
-                    existingNotice.remove();
+                if (noResultsPlaceholder.parentNode) {
+                    noResultsPlaceholder.remove();
+                }
+
+                // Do not display any records until a date is selected.
+                if (!dateVal) {
+                    rows.forEach(row => row.classList.add('hidden'));
+
+                    showMessage('Select a date to display the records for that day.');
+                    return;
                 }
 
                 let visibleCount = 0;
-                const isSearching = (dateVal || locVal || devVal);
 
                 rows.forEach(row => {
-                    const rowDate = row.querySelector('.data-date').textContent.trim();
-                    const rowLoc = row.querySelector('.data-location').textContent.toLowerCase();
-                    const rowDev = row.querySelector('.data-device').textContent.toLowerCase();
+                    const dateCell = row.querySelector('.data-date');
+                    const locationCell = row.querySelector('.data-location');
+                    const deviceCell = row.querySelector('.data-device');
 
-                    // Default behavior: If user is NOT searching, ONLY show today's logs.
-                    if (!isSearching) {
-                        if (rowDate === todayStr) {
-                            row.classList.remove('hidden');
-                            visibleCount++;
-                        } else {
-                            row.classList.add('hidden');
-                        }
-                        return;
-                    }
+                    const rowDate = dateCell
+                        ? dateCell.textContent.trim()
+                        : '';
 
-                    // Active evaluation when filters are populated
-                    const matchesDate = !dateVal || rowDate === dateVal; // Strict exact equivalence matching for native date pickers
+                    const rowLoc = locationCell
+                        ? locationCell.textContent.toLowerCase().trim()
+                        : '';
+
+                    const rowDev = deviceCell
+                        ? deviceCell.textContent.toLowerCase().trim()
+                        : '';
+
+                    const matchesDate = rowDate === dateVal;
                     const matchesLoc = !locVal || rowLoc.includes(locVal);
                     const matchesDev = !devVal || rowDev.includes(devVal);
 
@@ -279,48 +422,58 @@
                     }
                 });
 
-                // Hotspot ranking synchronization rule
+                // Update hotspot ranking after filtering.
                 if (isHotspotTable) {
                     let dynamicRank = 1;
+
                     rows.forEach(row => {
                         if (!row.classList.contains('hidden')) {
                             const rankCell = row.querySelector('.dynamic-rank');
+
                             if (rankCell) {
-                                rankCell.textContent = dynamicRank;
-                                dynamicRank++;
+                                rankCell.textContent = dynamicRank++;
                             }
                         }
                     });
                 }
 
-                // If nothing matches the search or no data exists for today, show notice
+                // Display a message if no records match.
                 if (visibleCount === 0) {
-                    if (!tableBody.querySelector('.filter-no-results-message')) {
-                        tableBody.appendChild(noResultsPlaceholder);
-                    }
+                    showMessage(
+                        'No records found for the selected date and filters.',
+                        'fa-circle-exclamation'
+                    );
                 }
             }
 
-            // Bind native filter update evaluation loops
-            [locIn, devIn].forEach(element => {
-                element.addEventListener('keyup', executeFilter);
-            });
-            
-            // Explicitly watch layout change states on date calendar select variations
+            // Apply filters as the user types or selects a date.
             [dateIn, locIn, devIn].forEach(element => {
+                element.addEventListener('input', executeFilter);
                 element.addEventListener('change', executeFilter);
             });
 
-            // Initialize on load
+            // Initial state: hide every record until a date is selected.
             executeFilter();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Table 1: Recent Violation Logs
-            setupTableFiltering('logsTable', 'log-row', 'logFilterDate', 'logFilterLocation', 'logFilterDevice', false);
-            
-            // Table 2: Top Violation Hotspots
-            setupTableFiltering('hotspotsTable', 'spot-row', 'spotFilterDate', 'spotFilterLocation', 'spotFilterDevice', true);
+            setupTableFiltering(
+                'logsTable',
+                'log-row',
+                'logFilterDate',
+                'logFilterLocation',
+                'logFilterDevice',
+                false
+            );
+
+            setupTableFiltering(
+                'hotspotsTable',
+                'spot-row',
+                'spotFilterDate',
+                'spotFilterLocation',
+                'spotFilterDevice',
+                true
+            );
         });
     </script>
 

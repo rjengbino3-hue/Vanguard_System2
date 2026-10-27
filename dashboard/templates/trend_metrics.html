@@ -243,6 +243,20 @@
             // Bind update processes across input event handlers
             dateInput.addEventListener('change', updateCharts);
             weekInput.addEventListener('change', updateCharts);
+
+            // --- AUTOMATED INITIALIZATION MARKER FOR THE WEEK SELECTOR ---
+            // Ensures the week selector is preset correctly to avoid blank initialization rendering
+            const today = new Date();
+            const targetJanFirst = new Date(today.getFullYear(), 0, 1);
+            const daysCount = Math.floor((today - targetJanFirst) / (24 * 60 * 60 * 1000));
+            const currentWeekNumber = Math.ceil((daysCount + targetJanFirst.getDay() + 1) / 7);
+            const formattedIsoWeek = `${today.getFullYear()}-W${String(currentWeekNumber).padStart(2, '0')}`;
+            
+            if (!weekInput.value) {
+                weekInput.value = formattedIsoWeek;
+                // Run immediate execution to render accurate metrics to the user on boot
+                updateCharts();
+            }
         });
     </script>
 </body>

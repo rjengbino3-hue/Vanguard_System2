@@ -6,7 +6,7 @@
     <title>Vanguard Analytics Portal - Overview</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="h-screen flex flex-col overflow-hidden select-none bg-slate-50">
 
@@ -19,6 +19,7 @@
             <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
                 <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
             </div>
+
             <div class="leading-tight">
                 <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
                 <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
@@ -46,42 +47,31 @@
                 </a>
             </div>
         </div>
-
-        <script>
-            const menuButton = document.getElementById('adminMenuButton');
-            const dropdown = document.getElementById('adminDropdown');
-
-            menuButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', () => {
-                dropdown.classList.add('hidden');
-            });
-        </script>
     </header>
 
     <div class="w-full flex flex-1 overflow-hidden">
-        
         <aside class="w-64 bg-[#112240] flex flex-col justify-between p-4 shrink-0">
             <div class="space-y-2 mt-2">
                 <a href="/overview" class="flex items-center space-x-4 bg-[#1d4ed8] text-white px-4 py-3 rounded-xl shadow-md transition-all">
                     <i class="fa-solid fa-table-columns text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Overview</span>
                 </a>
+
                 <a href="/logs/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-database text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Data Logs</span>
                 </a>
+
                 <a href="/trends/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-chart-line text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Trend and Metrics</span>
                 </a>
+
                 <a href="/report/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-file-invoice text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">History Report</span>
                 </a>
+
                 <a href="/cameras/" class="flex items-center space-x-4 text-slate-400 hover:bg-slate-800/50 hover:text-white px-4 py-3 rounded-xl transition-all">
                     <i class="fa-solid fa-camera text-lg w-6 text-center"></i>
                     <span class="font-bold text-sm tracking-wide">Cameras</span>
@@ -107,10 +97,11 @@
                     <div class="bg-[#0b3c5d] h-28 w-32 rounded-2xl flex items-center justify-center shadow-md">
                         <i class="fa-solid fa-motorcycle text-white text-4xl"></i>
                     </div>
+
                     <div>
                         <h4 class="text-[#0b3c5d] font-black text-sm tracking-wide">Total Helmet Violation Today</h4>
                         <div class="flex items-baseline space-x-2 mt-0.5">
-                            <span class="text-red-700 font-black text-6xl tracking-tight">{{ total_today }}</span>
+                            <span id="totalToday" class="text-red-700 font-black text-6xl tracking-tight">{{ total_today }}</span>
                         </div>
                         <p class="text-slate-400 text-xs font-bold">System Online</p>
                     </div>
@@ -118,17 +109,24 @@
 
                 <div class="border border-slate-100 rounded-3xl p-6 bg-[#fbfeff] shadow-[0_4px_25px_rgba(1,1,1,0.075)]">
                     <h3 class="text-[#0b3c5d] font-black text-sm tracking-wide mb-3">Enforcement Recommendation</h3>
+
                     <div class="grid grid-cols-2 gap-4 text-xs">
                         <div>
-                            <p class="text-slate-400 font-bold uppercase"><i class="fa-regular fa-clock text-red-500 mr-1"></i> Peak Time</p>
-                            <p class="text-[#0b3c5d] font-black text-sm mt-0.5">{{ peak_time }}</p>
-                            <p class="text-red-700 font-black mt-2">{{ peak_time_logged }} logged violations</p>
+                            <p class="text-slate-400 font-bold uppercase">
+                                <i class="fa-regular fa-clock text-red-500 mr-1"></i> Peak Time
+                            </p>
+                            <p id="peakTime" class="text-[#0b3c5d] font-black text-sm mt-0.5">{{ peak_time }}</p>
+                            <p id="peakTimeLogged" class="text-red-700 font-black mt-2">{{ peak_time_logged }} logged violations</p>
                         </div>
+
                         <div>
-                            <p class="text-slate-400 font-bold uppercase"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> Peak Location</p>
-                            <p class="text-[#0b3c5d] font-black text-sm mt-0.5 leading-tight">{{ peak_location }}</p>
+                            <p class="text-slate-400 font-bold uppercase">
+                                <i class="fa-solid fa-location-dot text-red-500 mr-1"></i> Peak Location
+                            </p>
+                            <p id="peakLocation" class="text-[#0b3c5d] font-black text-sm mt-0.5 leading-tight">{{ peak_location }}</p>
                         </div>
                     </div>
+
                     <p class="text-slate-400 text-[11px] font-medium mt-4 border-t border-slate-50 pt-2">
                         It is recommended that traffic enforcers prioritize visibility and presence in this location and time frame.
                     </p>
@@ -157,15 +155,31 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Unpack server side arrays directly via Flask template injection
+            const menuButton = document.getElementById('adminMenuButton');
+            const dropdown = document.getElementById('adminDropdown');
+
+            if (menuButton && dropdown) {
+                menuButton.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    dropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', () => {
+                    dropdown.classList.add('hidden');
+                });
+            }
+
             const serverHourlyData = {{ hourly_data | tojson }};
             const serverTrendLabels = {{ trend_labels | tojson }};
             const serverTrendData = {{ trend_data | tojson }};
 
-            // Dynamic base config with fixed min value and open auto scaling ceiling
+            let timeOfDayChart = null;
+            let dayTrendChart = null;
+
             const metricChartOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -177,33 +191,54 @@
                         cornerRadius: 8,
                         displayColors: false,
                         callbacks: {
-                            label: function(context) { return context.parsed.y + ' violations'; }
+                            label: function(context) {
+                                return context.parsed.y + ' violations';
+                            }
                         }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { stepSize: 1, color: '#94a3b8', font: { family: 'Poppins', size: 10, weight: '700' } },
-                        grid: { color: '#f1f5f9' }, border: { display: false }
+                        ticks: {
+                            stepSize: 1,
+                            color: '#94a3b8',
+                            font: {
+                                family: 'Poppins',
+                                size: 10,
+                                weight: '700'
+                            }
+                        },
+                        grid: { color: '#f1f5f9' },
+                        border: { display: false }
                     },
                     x: {
                         ticks: {
                             color: '#000000',
-                            font: { family: 'Poppins', weight: '700', size: 9 }
+                            font: {
+                                family: 'Poppins',
+                                weight: '700',
+                                size: 9
+                            }
                         },
                         grid: { display: false }
                     }
                 }
             };
 
-            // --- PLOT 1: TIME OF DAY BAR CHART ---
+            const hourLabels = [
+                '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM',
+                '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
+                '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM',
+                '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
+            ];
+
             const barCanvas = document.getElementById('timeOfDayChartWidescreen');
             if (barCanvas) {
-                new Chart(barCanvas.getContext('2d'), {
+                timeOfDayChart = new Chart(barCanvas.getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'],
+                        labels: hourLabels,
                         datasets: [{
                             data: serverHourlyData,
                             backgroundColor: '#0284c7',
@@ -216,10 +251,9 @@
                 });
             }
 
-            // --- PLOT 2: WEEKLY LINE CHART ---
             const lineCanvas = document.getElementById('dayOfWeekChartWidescreen');
             if (lineCanvas) {
-                new Chart(lineCanvas.getContext('2d'), {
+                dayTrendChart = new Chart(lineCanvas.getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: serverTrendLabels,
@@ -239,6 +273,36 @@
                     options: metricChartOptions
                 });
             }
+
+            async function refreshOverview() {
+                try {
+                    const response = await fetch('/overview/data', { cache: 'no-store' });
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+
+                    document.getElementById('totalToday').textContent = data.total_today;
+                    document.getElementById('peakTime').textContent = data.peak_time;
+                    document.getElementById('peakTimeLogged').textContent = `${data.peak_time_logged} logged violations`;
+                    document.getElementById('peakLocation').textContent = data.peak_location;
+
+                    if (timeOfDayChart) {
+                        timeOfDayChart.data.datasets[0].data = data.hourly_data;
+                        timeOfDayChart.update();
+                    }
+
+                    if (dayTrendChart) {
+                        dayTrendChart.data.labels = data.trend_labels;
+                        dayTrendChart.data.datasets[0].data = data.trend_data;
+                        dayTrendChart.update();
+                    }
+                } catch (error) {
+                    console.error('Failed to refresh overview dashboard:', error);
+                }
+            }
+
+            refreshOverview();
+            setInterval(refreshOverview, 5000);
         });
     </script>
 </body>
