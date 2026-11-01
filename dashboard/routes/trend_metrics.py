@@ -1,147 +1,222 @@
+
 from flask import Blueprint, render_template, request, jsonify
+from datetime import datetime, timedelta, timezone
 from src.database import get_supabase
-from datetime import datetime, timedelta
-from src.database import fetch_all_rows #ADDITIO NI
+from dashboard.auth_utils import login_required
+import logging
 
-trend_metrics_bp = Blueprint('trend_metrics', __name__)
+trend_metrics_bp = Blueprint("trend_metrics", __name__)
 
-def process_violation_data(records, target_date=None, target_week=None):
-    """Helper logic to process records into chart formats based on slices matching data_logs."""
-    hourly_distribution = [0] * 24
-    daily_trend_map = {}
-    
-    week_start, week_end = None, None
+# The project operates in Philippine local time.
+PH_TIMEZONE = timezone(timedelta(hours=8))
 
-    # Parse HTML5 ISO Week format (e.g., "2026-W28") safely using built-in calendar mappings
-    if target_week and target_week.strip():
-        try:
-            year_str, week_str = target_week.split('-W')
-            iso_year = int(year_str)
-            iso_week = int(week_str)
-            
-            # Day 1 = Monday, Day 7 = Sunday
-            week_start = datetime.fromisocalendar(iso_year, iso_week, 1).date()
-            week_end = datetime.fromisocalendar(iso_year, iso_week, 7).date()
-            
-            # Pre-populate the whole week with 0 baseline metrics
-            current_day = week_start
-            while current_day <= week_end:
-                daily_trend_map[current_day.strftime('%Y-%m-%d')] = 0
-                current_day += timedelta(days=1)
-        except Exception as e:
-            print(f"[WEEK PARSING ERROR] Failed parsing ISO week '{target_week}': {e}")
-
-    for log in records:
-        timestamp_str = log.get('timestamp')
-        if not timestamp_str or len(timestamp_str) < 13:
-            continue
-            
-        try:
-            # Match data_logs approach: extract standard 'YYYY-MM-DD' by slicing first 10 characters
-            date_str = timestamp_str[:10] 
-            
-            # Safely parse out hour characters from index 11 and 12 (e.g., "2026-07-12 15:45:20" -> "15")
-            hour_str = timestamp_str[11:13]
-            hour_val = int(hour_str)
-            
-            # Convert extracted date string to comparison object safely
-            record_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            
-            # --- Hourly Chart Mapping ---
-            if target_date:
-                if record_date == target_date:
-                    if 0 <= hour_val < 24:
-                        hourly_distribution[hour_val] += 1
-            else:
-                if 0 <= hour_val < 24:
-                    hourly_distribution[hour_val] += 1
-                
-            # --- Daily Trend Chart Mapping ---
-            if week_start and week_end:
-                if week_start <= record_date <= week_end:
-                    daily_trend_map[date_str] = daily_trend_map.get(date_str, 0) + 1
-            else:
-                daily_trend_map[date_str] = daily_trend_map.get(date_str, 0) + 1
-
-        except Exception as parse_err:
-            print(f"[PARSING ERROR] Skipping entry index due to unexpected format mapping: {parse_err}")
-
-    # Build response trends chronologically
-    sorted_dates = sorted(daily_trend_map.keys())
-    sorted_daily_counts = [daily_trend_map[d] for d in sorted_dates]
-
-    if not sorted_dates:
-        sorted_dates = [datetime.now().strftime('%Y-%m-%d')]
-        sorted_daily_counts = [0]
-
-    return hourly_distribution, sorted_dates, sorted_daily_counts
+# Retrieve records in manageable batches.
+PAGE_SIZE = 500
 
 
-@trend_metrics_bp.route('/')
-@trend_metrics_bp.route('')
-def index():
+def get_current_local_date():
+    return datetime.now(PH_TIMEZONE).date()
+
+
+def get_week_range(target_week):
+    """
+    Convert an HTML ISO week value (YYYY-Www)
+    into its Monday start date and following Monday.
+    """
     try:
-        supabase = get_supabase()
-        # Query exactly like data_logs.py to make sure the records arrive structured correctly
-        records = fetch_all_rows(
-    table_name="violations",
-    columns="*",
-    page_size=500,
-    order_column="timestamp",
-    descending=True,
-)  #CHANGES DIRIA
-        
-        today_date = datetime.now().date()
-        
-        hourly_distribution, sorted_dates, sorted_daily_counts = process_violation_data(
-            records, target_date=today_date, target_week=None
-        )
-        default_date_str = today_date.strftime('%Y-%m-%d')
+        year_str, week_str = target_week.split("-W")
+        iso_year = int(year_str)
+        iso_week = int(week_str)
 
-    except Exception as e:
-        print(f"[TRENDS ENGINE ERROR] Initialization failure: {e}")
-        hourly_distribution = [0] * 24
-        sorted_dates = [datetime.now().strftime('%Y-%m-%d')]
-        sorted_daily_counts = [0]
-        default_date_str = datetime.now().strftime('%Y-%m-%d')
+        week_start = datetime.fromisocalendar(
+            iso_year, iso_week, 1
+        ).date()
+
+        week_end = week_start + timedelta(days=7)
+
+        return week_start, week_end
+
+    except (ValueError, TypeError):
+        raise ValueError("Invalid week format. Please select a valid week.")
+
+
+def fetch_records_for_range(start_date, end_date):
+    """
+    Retrieve only timestamp records within the requested date range.
+    Uses pagination so results are not limited to one Supabase page.
+
+    Date boundaries are UTC to preserve the existing behavior of
+    interpreting the first 10 timestamp characters as the calendar date.
+    """
+    supabase = get_supabase()
+
+    start_timestamp = (
+        f"{start_date.isoformat()}T00:00:00+00:00"
+    )
+    end_timestamp = (
+        f"{end_date.isoformat()}T00:00:00+00:00"
+    )
+
+    records = []
+    offset = 0
+
+    while True:
+        response = (
+            supabase.table("violations")
+            .select("timestamp")
+            .gte("timestamp", start_timestamp)
+            .lt("timestamp", end_timestamp)
+            .order("timestamp", desc=False)
+            .range(offset, offset + PAGE_SIZE - 1)
+            .execute()
+        )
+
+        batch = response.data or []
+        records.extend(batch)
+
+        if len(batch) < PAGE_SIZE:
+            break
+
+        offset += PAGE_SIZE
+
+    return records
+
+
+def build_hourly_data(records):
+    """Count violations in each hour of the selected date."""
+    hourly_distribution = [0] * 24
+
+    for record in records:
+        timestamp = record.get("timestamp")
+
+        if not timestamp or len(timestamp) < 13:
+            continue
+
+        try:
+            hour = int(str(timestamp)[11:13])
+
+            if 0 <= hour < 24:
+                hourly_distribution[hour] += 1
+
+        except (ValueError, TypeError):
+            logging.warning(
+                "Skipping record with invalid timestamp: %s",
+                timestamp
+            )
+
+    return hourly_distribution
+
+
+def build_weekly_data(records, week_start):
+    """Count violations for each day of the selected ISO week."""
+    daily_counts = {}
+
+    # Prepopulate all seven days with zero.
+    for day_offset in range(7):
+        current_day = week_start + timedelta(days=day_offset)
+        daily_counts[current_day.isoformat()] = 0
+
+    for record in records:
+        timestamp = record.get("timestamp")
+
+        if not timestamp or len(timestamp) < 10:
+            continue
+
+        try:
+            date_str = str(timestamp)[:10]
+
+            if date_str in daily_counts:
+                daily_counts[date_str] += 1
+
+        except (ValueError, TypeError):
+            logging.warning(
+                "Skipping record with invalid timestamp: %s",
+                timestamp
+            )
+
+    labels = sorted(daily_counts.keys())
+    counts = [daily_counts[day] for day in labels]
+
+    return labels, counts
+
+
+@trend_metrics_bp.route("/")
+@trend_metrics_bp.route("")
+@login_required
+def index():
+    # Render the page only. Do not retrieve violation records here.
+    today = get_current_local_date()
 
     return render_template(
-        'trend_metrics.html', 
-        hourly_data=hourly_distribution,
-        trend_labels=sorted_dates,
-        trend_data=sorted_daily_counts,
-        default_date=default_date_str
+        "trend_metrics.html",
+        hourly_data=[0] * 24,
+        trend_labels=[today.isoformat()],
+        trend_data=[0],
+        default_date=today.isoformat()
     )
 
 
-@trend_metrics_bp.route('/data')
+@trend_metrics_bp.route("/data")
+@login_required
 def get_filtered_data():
     try:
-        date_param = request.args.get('date')
-        week_param = request.args.get('week')
+        date_param = request.args.get("date", "").strip()
+        week_param = request.args.get("week", "").strip()
 
-        target_date = None
-        if date_param and date_param.strip():
-            target_date = datetime.strptime(date_param.strip(), '%Y-%m-%d').date()
+        # Use today's date if no date was supplied.
+        if date_param:
+            target_date = datetime.strptime(
+                date_param, "%Y-%m-%d"
+            ).date()
+        else:
+            target_date = get_current_local_date()
 
-        supabase = get_supabase()
-        records = fetch_all_rows(
-    table_name="violations",
-    columns="*",
-    page_size=500,
-    order_column="timestamp",
-    descending=True,
-) #changes diria
+        # Validate the selected week.
+        if week_param:
+            week_start, week_end = get_week_range(week_param)
+        else:
+            # Default to the current ISO week.
+            current_date = get_current_local_date()
+            week_start = current_date - timedelta(
+                days=current_date.weekday()
+            )
+            week_end = week_start + timedelta(days=7)
 
-        hourly_distribution, sorted_dates, sorted_daily_counts = process_violation_data(
-            records, target_date=target_date, target_week=week_param
+        # Query 1: Only the selected date for the hourly chart.
+        hourly_records = fetch_records_for_range(
+            target_date,
+            target_date + timedelta(days=1)
+        )
+
+        # Query 2: Only the selected week for the daily chart.
+        weekly_records = fetch_records_for_range(
+            week_start,
+            week_end
+        )
+
+        hourly_distribution = build_hourly_data(hourly_records)
+
+        sorted_dates, sorted_daily_counts = build_weekly_data(
+            weekly_records,
+            week_start
         )
 
         return jsonify({
-            'hourly_data': hourly_distribution,
-            'trend_labels': sorted_dates,
-            'trend_data': sorted_daily_counts
+            "hourly_data": hourly_distribution,
+            "trend_labels": sorted_dates,
+            "trend_data": sorted_daily_counts
         })
-    except Exception as e:
-        print(f"[API FILTER ERROR] Exception caught: {e}")
-        return jsonify({'error': str(e)}), 500
+
+    except ValueError as error:
+        return jsonify({
+            "error": str(error)
+        }), 400
+
+    except Exception:
+        logging.exception(
+            "Failed to retrieve Trend Metrics data."
+        )
+
+        return jsonify({
+            "error": "Unable to retrieve metrics. Please try again."
+        }), 500

@@ -192,6 +192,39 @@
             border-color: #0d3878;
         }
 
+        .password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #576574;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.toggle-password:hover {
+    color: #0d3878;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+}
+
         .login-btn {
             width: 100%;
             background-color: #0d3c7d;
@@ -246,22 +279,84 @@
             <p class="welcome-subtitle">Sign in to access VanGuard Analytics Portal</p>
 
             <form class="form-container" action="/login" method="POST">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                   <input type="text" id="username" name="username" placeholder="Enter username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter password" required>
-                </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                <button type="submit" class="login-btn">Login</button>
-            </form>
-        </div>
-
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username"
+               placeholder="Enter username" required>
     </div>
 
-    
+    <div class="form-group">
+    <label for="password">Password</label>
+
+    <div class="password-wrapper">
+        <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            required
+        >
+
+        <button
+            type="button"
+            class="toggle-password"
+            id="togglePassword"
+            aria-label="Show password"
+            aria-pressed="false"
+        >
+            <!-- Eye icon -->
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+    <button type="submit" class="login-btn">Login</button>
+</form>
+
+   <script>
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+    const eyeIcon = document.getElementById("eyeIcon");
+
+    togglePassword.addEventListener("click", function () {
+        const isPasswordHidden = passwordInput.type === "password";
+
+        passwordInput.type = isPasswordHidden ? "text" : "password";
+
+        togglePassword.setAttribute(
+            "aria-label",
+            isPasswordHidden ? "Hide password" : "Show password"
+        );
+
+        togglePassword.setAttribute(
+            "aria-pressed",
+            isPasswordHidden ? "true" : "false"
+        );
+
+        if (isPasswordHidden) {
+            // Eye with a slash
+            eyeIcon.innerHTML = `
+                <path d="M3 3l18 18"/>
+                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
+                <path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a13.5 13.5 0 0 1-3 3.8"/>
+                <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.3 0 2.5-.3 3.5-.7"/>
+            `;
+        } else {
+            // Normal eye
+            eyeIcon.innerHTML = `
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+            `;
+        }
+    });
+</script> 
 </body>
 </html>

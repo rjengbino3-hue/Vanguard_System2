@@ -1,13 +1,15 @@
+
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, render_template
 from src.database import get_supabase
-
+from dashboard.auth_utils import login_required
 
 overview_bp = Blueprint("overview", __name__)
 
 HISTORICAL_DAYS = 8
+PAGE_SIZE = 1000
 
 
 def get_local_timezone():
@@ -20,8 +22,7 @@ def parse_timestamp(timestamp):
 
     text = str(timestamp).strip()
 
-    # Your Supabase timestamp clock value is already local/camera time.
-    # Remove timezone suffixes so Python does not add another +8 hours.
+    # Preserve the existing camera/local-time interpretation.
     if text.endswith("Z"):
         text = text[:-1]
 
@@ -37,39 +38,54 @@ def dedupe_records(records):
     unique_records = []
 
     for record in records:
-        key = record.get("dedupe_key") or record.get("event_id") or record.get("id")
+        record_id = record.get("id")
 
-        if key in seen:
+        # Keep records without an ID rather than accidentally discarding them.
+        if record_id is None:
+            unique_records.append(record)
             continue
 
-        seen.add(key)
-        unique_records.append(record)
+        if record_id not in seen:
+            seen.add(record_id)
+            unique_records.append(record)
 
     return unique_records
 
 
-def fetch_all_violations():
+def fetch_recent_violations(start_date, end_date):
+    """
+    Fetch records from start_date inclusive
+    to end_date exclusive.
+
+    Dates use the existing camera/local-time interpretation.
+    """
+
     supabase = get_supabase()
+
+    start_timestamp = f"{start_date.isoformat()}T00:00:00"
+    end_timestamp = f"{end_date.isoformat()}T00:00:00"
+
     records = []
-    page_size = 1000
     offset = 0
 
     while True:
         response = (
             supabase.table("violations")
-            .select("*")
+            .select("id,timestamp,location,device_id")
+            .gte("timestamp", start_timestamp)
+            .lt("timestamp", end_timestamp)
             .order("timestamp", desc=False)
-            .range(offset, offset + page_size - 1)
+            .range(offset, offset + PAGE_SIZE - 1)
             .execute()
         )
 
-        page = response.data if response and hasattr(response, "data") else []
-        records.extend(page)
+        batch = response.data or []
+        records.extend(batch)
 
-        if len(page) < page_size:
+        if len(batch) < PAGE_SIZE:
             break
 
-        offset += page_size
+        offset += PAGE_SIZE
 
     return dedupe_records(records)
 
@@ -91,7 +107,11 @@ def build_overview_metrics():
     yesterday = today - timedelta(days=1)
     trend_start_date = today - timedelta(days=HISTORICAL_DAYS - 1)
 
-    records = fetch_all_violations()
+    # Retrieve only the records needed by the dashboard.
+    records = fetch_recent_violations(
+        trend_start_date,
+        today + timedelta(days=1)
+    )
 
     today_records = []
     yesterday_records = []
@@ -100,6 +120,7 @@ def build_overview_metrics():
     for log in records:
         try:
             local_dt = parse_timestamp(log.get("timestamp"))
+
             if local_dt is None:
                 continue
 
@@ -123,7 +144,6 @@ def build_overview_metrics():
 
     hourly_distribution = [0] * 24
     hour_counter = Counter()
-    location_counter = Counter()
     today_location_counter = Counter()
     location_device_map = {}
     first_today_dt = None
@@ -135,7 +155,6 @@ def build_overview_metrics():
         hour_counter[local_dt.hour] += 1
 
         location = log.get("location") or "Unknown Location"
-        location_counter[location] += 1
         today_location_counter[location] += 1
 
         if log.get("device_id"):
@@ -147,12 +166,18 @@ def build_overview_metrics():
     comparison_text = "No change from yesterday"
 
     if total_yesterday > 0:
-        pct_diff = ((total_today - total_yesterday) / total_yesterday) * 100
+        pct_diff = (
+            (total_today - total_yesterday) / total_yesterday
+        ) * 100
 
         if pct_diff > 0:
-            comparison_text = f"{abs(pct_diff):.0f}% Higher than Yesterday"
+            comparison_text = (
+                f"{abs(pct_diff):.0f}% Higher than Yesterday"
+            )
         elif pct_diff < 0:
-            comparison_text = f"{abs(pct_diff):.0f}% Lower than Yesterday"
+            comparison_text = (
+                f"{abs(pct_diff):.0f}% Lower than Yesterday"
+            )
 
     elif total_today > 0:
         comparison_text = "100% Higher than Yesterday"
@@ -164,8 +189,8 @@ def build_overview_metrics():
         peak_time_str = "No Data Yet"
         peak_time_logged = 0
 
-    if location_counter:
-        peak_location_str = location_counter.most_common(1)[0][0]
+    if today_location_counter:
+        peak_location_str = today_location_counter.most_common(1)[0][0]
     else:
         peak_location_str = "No Hotspots Detected"
 
@@ -199,7 +224,10 @@ def build_overview_metrics():
     return {
         "total_today": total_today,
         "comparison_text": comparison_text,
-        "since_time": first_today_dt.strftime("%I:%M %p") if first_today_dt else "N/A",
+        "since_time": (
+            first_today_dt.strftime("%I:%M %p")
+            if first_today_dt else "N/A"
+        ),
         "peak_time": peak_time_str,
         "peak_time_logged": peak_time_logged,
         "peak_location": peak_location_str,
@@ -209,7 +237,10 @@ def build_overview_metrics():
             datetime.fromisoformat(date_key).strftime("%b %d")
             for date_key in trend_dates
         ],
-        "trend_data": [daily_trend_map[date_key] for date_key in trend_dates],
+        "trend_data": [
+            daily_trend_map[date_key]
+            for date_key in trend_dates
+        ],
         "recent_logs": list(reversed(today_records)),
         "hotspots": today_hotspots,
     }
@@ -223,7 +254,9 @@ def empty_overview_metrics():
         "peak_time": "Unavailable",
         "peak_time_logged": 0,
         "peak_location": "Unavailable",
-        "peak_date": datetime.now(get_local_timezone()).strftime("%B %d, %Y"),
+        "peak_date": datetime.now(
+            get_local_timezone()
+        ).strftime("%B %d, %Y"),
         "hourly_data": [0] * 24,
         "trend_labels": ["No Data"],
         "trend_data": [0],
@@ -233,20 +266,26 @@ def empty_overview_metrics():
 
 
 @overview_bp.route("/overview/data")
+@login_required
 def overview_data():
     try:
         return jsonify(build_overview_metrics())
-    except Exception as e:
-        print(f"[OVERVIEW DATA ERROR] {e}")
+
+    except Exception:
+        import logging
+        logging.exception("Overview data retrieval failed.")
         return jsonify(empty_overview_metrics()), 500
 
 
 @overview_bp.route("/overview")
+@login_required
 def index():
     try:
         metrics = build_overview_metrics()
-    except Exception as e:
-        print(f"[OVERVIEW DATABASE SYSTEM FAILURE] {e}")
+
+    except Exception:
+        import logging
+        logging.exception("Overview dashboard loading failed.")
         metrics = empty_overview_metrics()
 
     return render_template("overview.html", **metrics)

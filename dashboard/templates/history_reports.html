@@ -43,10 +43,14 @@
                     <span>Settings</span>
                 </a>
                 <div class="w-full h-px bg-slate-100 my-1"></div>
-                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
-                    <span>Log Out</span>
-                </a>
+                <form action="/logout" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <button type="submit" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all w-full text-left">
+        <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+        <span>Log Out</span>
+    </button>
+</form>
             </div>
         </div>
 
@@ -180,200 +184,165 @@
         </main>
     </div>
 
-    <script>
-        const rawDatabaseLogs = {{ logs | tojson | safe if logs else '[]' }};
-    </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const datePicker = document.getElementById('reportDatePicker');
-            const graphCanvas = document.getElementById('historyHourlyChart');
-            let chartInstance = null;
+    const datePicker = document.getElementById('reportDatePicker');
 
-            // Set up fallback today string (YYYY-MM-DD)
-            const todayStr = new Date().toISOString().split('T')[0];
-            datePicker.value = todayStr;
+    const metricTotalCount = document.getElementById('metricTotalCount');
+    const metricComparisonTrend = document.getElementById('metricComparisonTrend');
 
-            // Hourly structural array setup
-            const hoursLabels = ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'];
+    const detailDate = document.getElementById('detailDate');
+    const detailPeakLocation = document.getElementById('detailPeakLocation');
+    const detailPeakTime = document.getElementById('detailPeakTime');
+    const detailCamera = document.getElementById('detailCamera');
+    const detailPeakCount = document.getElementById('detailPeakCount');
+    const detailTrendStatus = document.getElementById('detailTrendStatus');
 
-            function updateReportView() {
-                const selectedDate = datePicker.value;
-                if (!selectedDate) return;
+    const hoursLabels = [
+        '12 AM - 1 AM', '1 AM - 2 AM',
+        '2 AM - 3 AM', '3 AM - 4 AM',
+        '4 AM - 5 AM', '5 AM - 6 AM',
+        '6 AM - 7 AM', '7 AM - 8 AM',
+        '8 AM - 9 AM', '9 AM - 10 AM',
+        '10 AM - 11 AM', '11 AM - 12 PM',
+        '12 PM - 1 PM', '1 PM - 2 PM',
+        '2 PM - 3 PM', '3 PM - 4 PM',
+        '4 PM - 5 PM', '5 PM - 6 PM',
+        '6 PM - 7 PM', '7 PM - 8 PM',
+        '8 PM - 9 PM', '9 PM - 10 PM',
+        '10 PM - 11 PM', '11 PM - 12 AM'
+    ];
 
-                // Format friendly display date
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                document.getElementById('detailDate').textContent = new Date(selectedDate).toLocaleDateString('en-US', options);
+    const chartCanvas = document.getElementById('historyHourlyChart');
 
-                // 1. Separate logs for selected day vs previous day (to compute trend lines)
-                const targetDateObj = new Date(selectedDate);
-                targetDateObj.setDate(targetDateObj.getDate() - 1);
-                const previousDateStr = targetDateObj.toISOString().split('T')[0];
+    const ctx = chartCanvas.getContext('2d');
 
-                const currentDayLogs = rawDatabaseLogs.filter(log => log.timestamp && log.timestamp.substring(0, 10) === selectedDate);
-                const priorDayLogs = rawDatabaseLogs.filter(log => log.timestamp && log.timestamp.substring(0, 10) === previousDateStr);
-
-                // 2. Map Violations directly to their Hourly Slots
-                const hourlyCounts = new Array(24).fill(0);
-                let peakHourIndex = 0;
-                let maxHourCount = 0;
-
-                // Map of location string frequencies
-                const locationMap = {};
-                // Map of device ID frequencies
-                const deviceMap = {};
-
-                currentDayLogs.forEach(log => {
-                    // Extract hour slot from timestamp (format assumed: "YYYY-MM-DDTHH:MM:SS" or similar)
-                    if(log.timestamp && log.timestamp.length >= 16) {
-                        const hour = parseInt(log.timestamp.substring(11, 13), 10);
-                        if(!isNaN(hour) && hour >= 0 && hour < 24) {
-                            hourlyCounts[hour]++;
-                        }
-                    }
-
-                    if (log.location) {
-                        locationMap[log.location] = (locationMap[log.location] || 0) + 1;
-                    }
-                    if (log.device_id) {
-                        deviceMap[log.device_id] = (deviceMap[log.device_id] || 0) + 1;
-                    }
-                });
-
-                // Find peak metrics
-                for(let i = 0; i < 24; i++) {
-                    if(hourlyCounts[i] > maxHourCount) {
-                        maxHourCount = hourlyCounts[i];
-                        peakHourIndex = i;
+    const historyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: hoursLabels,
+            datasets: [{
+                label: 'Helmet Violations',
+                data: Array(24).fill(0),
+                backgroundColor: '#3B82F6',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
                     }
                 }
+            }
+        }
+    });
 
-                let peakLocation = "N/A";
-                let maxLocCount = 0;
-                for (const [loc, count] of Object.entries(locationMap)) {
-                    if (count > maxLocCount) {
-                        maxLocCount = count;
-                        peakLocation = loc;
-                    }
-                }
+    function formatDate(dateString) {
+        const date = new Date(dateString + 'T00:00:00');
 
-                let peakDevice = "N/A";
-                let maxDevCount = 0;
-                for (const [dev, count] of Object.entries(deviceMap)) {
-                    if (count > maxDevCount) {
-                        maxDevCount = count;
-                        peakDevice = dev;
-                    }
-                }
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
 
-                // 3. Render calculations to DOM Nodes
-                const totalCount = currentDayLogs.length;
-                document.getElementById('metricTotalCount').textContent = totalCount;
-                document.getElementById('detailPeakCount').textContent = `${maxHourCount} violations`;
-                document.getElementById('detailPeakLocation').textContent = peakLocation;
-                document.getElementById('detailCamera').textContent = peakDevice;
+    function formatHour(hour) {
+        const start = hour % 12 || 12;
+        const end = (hour + 1) % 12 || 12;
 
-                // Humanize the display hour index
-                const rawHour = peakHourIndex;
-                const startHourStr = hoursLabels[rawHour];
-                const endHourStr = hoursLabels[(rawHour + 1) % 24];
-                document.getElementById('detailPeakTime').textContent = totalCount > 0 ? `${startHourStr} - ${endHourStr}` : "N/A";
+        const startPeriod = hour < 12 ? 'AM' : 'PM';
+        const endPeriod = (hour + 1) < 12 || (hour + 1) === 24 ? 'AM' : 'PM';
 
-                // 4. Trend Delta Logic Calculations
-                let trendText = "No previous data";
-                let comparisonText = "0% vs Previous Day";
-                if (priorDayLogs.length > 0) {
-                    const diff = totalCount - priorDayLogs.length;
-                    const pct = Math.round((diff / priorDayLogs.length) * 100);
-                    if (pct > 0) {
-                        trendText = `${pct}% Higher than yesterday`;
-                        comparisonText = `${pct}% Higher than previous days`;
-                        document.getElementById('metricComparisonTrend').className = "text-red-600 font-black text-xs mt-1";
-                    } else if (pct < 0) {
-                        trendText = `${Math.abs(pct)}% Lower than yesterday`;
-                        comparisonText = `${Math.abs(pct)}% Lower than previous days`;
-                        document.getElementById('metricComparisonTrend').className = "text-green-600 font-black text-xs mt-1";
-                    } else {
-                        trendText = "Equal volume to yesterday";
-                        comparisonText = "Stable volumes detected";
-                        document.getElementById('metricComparisonTrend').className = "text-slate-500 font-black text-xs mt-1";
-                    }
-                } else if (totalCount > 0) {
-                    trendText = "Initial recorded logs tracking";
-                    comparisonText = "No comparative records prior";
-                }
-                document.getElementById('metricComparisonTrend').textContent = trendText;
-                document.getElementById('detailTrendStatus').textContent = comparisonText;
+        return `${start} ${startPeriod} - ${end} ${endPeriod}`;
+    }
 
-                // 5. Build/Refresh Chart Instance
-                if (chartInstance) {
-                    chartInstance.destroy();
-                }
+    async function updateReportView() {
 
-                // Smooth out chart limits depending on counts
-                const dynamicMax = Math.max(10, Math.ceil((Math.max(...hourlyCounts) + 5) / 5) * 5);
+        const selectedDate = datePicker.value;
 
-                chartInstance = new Chart(graphCanvas.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: hoursLabels,
-                        datasets: [{
-                            data: hourlyCounts,
-                            backgroundColor: '#0284c7',
-                            hoverBackgroundColor: '#1d4ed8',
-                            borderRadius: 4,
-                            barPercentage: 0.6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                enabled: true,
-                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                titleFont: { family: 'Poppins', size: 11, weight: '700' },
-                                bodyFont: { family: 'Poppins', size: 12, weight: '900' },
-                                padding: 10,
-                                cornerRadius: 8,
-                                displayColors: false,
-                                callbacks: {
-                                    label: function(context) { return context.parsed.y + ' violations'; }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                min: 0, 
-                                max: dynamicMax,
-                                ticks: { color: '#94a3b8', font: { family: 'Poppins', size: 10 } },
-                                grid: { color: '#f1f5f9' }, 
-                                border: { display: false }
-                            },
-                            x: {
-                                ticks: {
-                                    color: '#000000',
-                                    font: { family: 'Poppins', weight: '700', size: 9 },
-                                    callback: function(val) {
-                                        const allowed = ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'];
-                                        const labelText = this.getLabelForValue(val);
-                                        return allowed.includes(labelText) ? labelText : '';
-                                    }
-                                },
-                                grid: { display: false }
-                            }
-                        }
-                    }
-                });
+        if (!selectedDate) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "{{ url_for('history_report.get_report_data') }}" +
+                "?date=" + encodeURIComponent(selectedDate)
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Unable to load report data.');
             }
 
-            // Bind change hooks directly into calendar interface
-            datePicker.addEventListener('change', updateReportView);
+            // Update total violations.
+            metricTotalCount.textContent = data.total_count;
 
-            // Seed primary load
-            updateReportView();
-        });
-    </script>
+            // Update selected report date.
+            detailDate.textContent = formatDate(selectedDate);
+
+            // Update peak location.
+            detailPeakLocation.textContent = data.peak_location;
+
+            // Update peak time.
+            detailPeakTime.textContent =
+                data.total_count > 0 && data.peak_count > 0
+                    ? formatHour(data.peak_hour)
+                    : 'N/A';
+
+            // Update camera information.
+            detailCamera.textContent = data.peak_device;
+
+            // Update peak violation count.
+            detailPeakCount.textContent = data.peak_count;
+
+            // Update comparison information.
+            metricComparisonTrend.textContent = data.comparison_text;
+
+            detailTrendStatus.textContent = data.trend_text;
+            detailTrendStatus.className = data.trend_class;
+
+            // Update hourly chart.
+            historyChart.data.labels = hoursLabels;
+            historyChart.data.datasets[0].data = data.hourly_counts;
+            historyChart.update();
+
+        } catch (error) {
+            console.error('History Report Error:', error);
+
+            alert(
+                'Unable to retrieve History Reports data. Please try again.'
+            );
+        }
+    }
+
+    // Set the initial date using the current UTC date,
+    // preserving the previous implementation's date behavior.
+    const today = new Date().toISOString().split('T')[0];
+
+    datePicker.value = today;
+
+    // Load report when the page opens.
+    updateReportView();
+
+    // Reload report when the selected date changes.
+    datePicker.addEventListener('change', updateReportView);
+
+});
+</script>
+
 </body>
 </html>

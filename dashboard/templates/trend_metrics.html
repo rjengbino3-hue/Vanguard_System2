@@ -41,10 +41,14 @@
                     <span>Settings</span>
                 </a>
                 <div class="w-full h-px bg-slate-100 my-1"></div>
-                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
-                    <span>Log Out</span>
-                </a>
+                <form action="/logout" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <button type="submit" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all w-full text-left">
+        <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+        <span>Log Out</span>
+    </button>
+</form>
             </div>
         </div>
     </header>
@@ -115,6 +119,15 @@
         </main>
     </div>
 
+        <!-- Initial chart data from Flask -->
+    <script id="initialChartData" type="application/json">
+        {{ {
+            "hourly_data": hourly_data,
+            "trend_labels": trend_labels,
+            "trend_data": trend_data
+        } | tojson }}
+    </script>
+
     <script>
         // Dropdown interactive system context block
         const menuButton = document.getElementById('adminMenuButton');
@@ -126,9 +139,17 @@
         document.addEventListener('click', () => dropdown.classList.add('hidden'));
 
         window.addEventListener('load', () => {
-            const serverHourlyData = {{ hourly_data | tojson }};
-            const serverTrendLabels = {{ trend_labels | tojson }};
-            const serverTrendData = {{ trend_data | tojson }};
+            const serverHourlyData = JSON.parse(
+                document.getElementById('initialChartData').textContent
+            ).hourly_data;
+
+            const serverTrendLabels = JSON.parse(
+                document.getElementById('initialChartData').textContent
+            ).trend_labels;
+
+            const serverTrendData = JSON.parse(
+                document.getElementById('initialChartData').textContent
+            ).trend_data;
 
             const baseChartConfig = {
                 responsive: true,
@@ -211,53 +232,86 @@
             const weekInput = document.getElementById('weekFilterInput');
 
             function updateCharts() {
-                const dateVal = dateInput.value;
-                const weekVal = weekInput.value;
+    const dateVal = dateInput.value;
+    const weekVal = weekInput.value;
 
-                // Build query URL parameters dynamically
-                let url = `/trends/data?`;
-                if (dateVal) url += `date=${dateVal}&`;
-                if (weekVal) url += `week=${weekVal}`;
+    let url = '/trends/data?';
 
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) return;
+    if (dateVal) {
+        url += 'date=' + encodeURIComponent(dateVal);
+    }
 
-                        // Update Bar Graph safely
-                        if (hourlyBarChart && data.hourly_data) {
-                            hourlyBarChart.data.datasets[0].data = data.hourly_data;
-                            hourlyBarChart.update();
-                        }
+    if (weekVal) {
+        if (dateVal) {
+            url += '&';
+        }
+        url += 'week=' + encodeURIComponent(weekVal);
+    }
 
-                        // Update Line Graph safely
-                        if (dailyLineChart && data.trend_labels && data.trend_data) {
-                            dailyLineChart.data.labels = data.trend_labels;
-                            dailyLineChart.data.datasets[0].data = data.trend_data;
-                            dailyLineChart.update();
-                        }
-                    })
-                    .catch(err => console.error("Error updates metrics via filter pipelines:", err));
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server returned status: ' + response.status);
             }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            if (hourlyBarChart && data.hourly_data) {
+                hourlyBarChart.data.datasets[0].data = data.hourly_data;
+                hourlyBarChart.update();
+            }
+
+            if (dailyLineChart && data.trend_labels && data.trend_data) {
+                dailyLineChart.data.labels = data.trend_labels;
+                dailyLineChart.data.datasets[0].data = data.trend_data;
+                dailyLineChart.update();
+            }
+        })
+        .catch(error => {
+            console.error('Trend Metrics retrieval error:', error);
+        });
+}
 
             // Bind update processes across input event handlers
             dateInput.addEventListener('change', updateCharts);
             weekInput.addEventListener('change', updateCharts);
 
-            // --- AUTOMATED INITIALIZATION MARKER FOR THE WEEK SELECTOR ---
-            // Ensures the week selector is preset correctly to avoid blank initialization rendering
-            const today = new Date();
-            const targetJanFirst = new Date(today.getFullYear(), 0, 1);
-            const daysCount = Math.floor((today - targetJanFirst) / (24 * 60 * 60 * 1000));
-            const currentWeekNumber = Math.ceil((daysCount + targetJanFirst.getDay() + 1) / 7);
-            const formattedIsoWeek = `${today.getFullYear()}-W${String(currentWeekNumber).padStart(2, '0')}`;
-            
-            if (!weekInput.value) {
-                weekInput.value = formattedIsoWeek;
-                // Run immediate execution to render accurate metrics to the user on boot
-                updateCharts();
-            }
-        });
+ // --- AUTOMATED ISO WEEK INITIALIZATION ---
+    function getISOWeekValue(date) {
+        const d = new Date(Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate()
+        ));
+
+        const dayNumber = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNumber);
+
+        const yearStart = new Date(Date.UTC(
+            d.getUTCFullYear(),
+            0,
+            1
+        ));
+
+        const weekNumber = Math.ceil(
+            (((d - yearStart) / 86400000) + 1) / 7
+        );
+
+        const weekText = String(weekNumber).padStart(2, '0');
+
+        return d.getUTCFullYear() + '-W' + weekText;
+    }
+
+    if (!weekInput.value) {
+        weekInput.value = getISOWeekValue(new Date());
+        updateCharts();
+    }
+
+});
     </script>
 </body>
 </html>

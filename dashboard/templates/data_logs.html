@@ -86,11 +86,14 @@
 
                 <div class="w-full h-px bg-slate-100 my-1"></div>
 
-                <a href="/logout"
-                   class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
-                    <span>Log Out</span>
-                </a>
+                <form action="/logout" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <button type="submit" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all w-full text-left">
+        <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+        <span>Log Out</span>
+    </button>
+</form>
             </div>
         </div>
     </header>
@@ -206,31 +209,12 @@
                         </thead>
 
                         <tbody class="divide-y divide-slate-100 text-[#0b3c5d] text-xs font-semibold">
-                            {% if logs %}
-                                {% for log in logs %}
-                                <tr class="log-row hover:bg-slate-50/80 transition-colors">
-                                    <td class="p-4 pl-6 text-slate-500 data-date">
-                                        {{ log.timestamp[:10] if log.timestamp else '' }}
-                                    </td>
-                                    <td class="p-4 text-slate-500">
-                                        {{ log.timestamp[11:16] if log.timestamp else '' }}
-                                    </td>
-                                    <td class="p-4 font-bold text-slate-700">
-                                        {{ log.tracking_id if log.tracking_id else 'N/A' }}
-                                    </td>
-                                    <td class="p-4 data-location">{{ log.location }}</td>
-                                    <td class="p-4 pr-6 text-slate-600 font-mono data-device">
-                                        {{ log.device_id }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr class="empty-placeholder">
-                                    <td colspan="5" class="p-8 text-center text-slate-300 font-normal italic">
-                                        No records detected in database.
-                                    </td>
-                                </tr>
-                            {% endif %}
+                            <tr class="empty-placeholder">
+                                 <td colspan="5"
+                                class="p-8 text-center text-slate-400 font-normal italic">
+                                Select a date to display the records for that day.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -288,31 +272,12 @@
                         </thead>
 
                         <tbody class="divide-y divide-slate-100 text-[#0b3c5d] text-xs font-semibold">
-                            {% if hotspots %}
-                                {% for spot in hotspots %}
-                                <tr class="spot-row hover:bg-slate-50/80 transition-colors">
-                                    <td class="p-4 pl-6 text-slate-500 data-date">
-                                        {{ spot.timestamp[:10] if spot.timestamp else '' }}
-                                    </td>
-                                    <td class="p-4 font-black text-blue-600 dynamic-rank">
-                                        {{ loop.index }}
-                                    </td>
-                                    <td class="p-4 font-bold data-location">{{ spot.location }}</td>
-                                    <td class="p-4 font-black text-slate-700 bg-blue-50/50 rounded-lg text-left pl-6">
-                                        {{ spot.count }}
-                                    </td>
-                                    <td class="p-4 pr-6 text-slate-600 font-mono data-device">
-                                        {{ spot.device_id }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr class="empty-placeholder">
-                                    <td colspan="5" class="p-8 text-center text-slate-300 font-normal italic">
-                                        No hotspot data available.
-                                    </td>
-                                </tr>
-                            {% endif %}
+                            <tr class="empty-placeholder">
+                                <td colspan="5"
+                                class="p-8 text-center text-slate-400 font-normal italic">
+                                Select a date to display the hotspot records.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -335,146 +300,206 @@
             dropdown.classList.add('hidden');
         });
 
-        // TABLE FILTERING
-        function setupTableFiltering(
-            tableId,
-            rowClass,
-            dateInputId,
-            locInputId,
-            devInputId,
-            isHotspotTable = false
-        ) {
-            const dateIn = document.getElementById(dateInputId);
-            const locIn = document.getElementById(locInputId);
-            const devIn = document.getElementById(devInputId);
-            const tableBody = document.querySelector(`#${tableId} tbody`);
+   
+        // DATA LOGS: LOAD RECORDS ONLY AFTER A DATE IS SELECTED
 
-            const rows = Array.from(tableBody.querySelectorAll(`.${rowClass}`));
+document.addEventListener("DOMContentLoaded", () => {
 
-            // Remove server-rendered empty placeholders.
-            const serverPlaceholder = tableBody.querySelector('.empty-placeholder');
-            if (serverPlaceholder) {
-                serverPlaceholder.remove();
-            }
+    const dateInput = document.getElementById("logFilterDate");
+    const locationInput = document.getElementById("logFilterLocation");
+    const deviceInput = document.getElementById("logFilterDevice");
 
-            const noResultsPlaceholder = document.createElement('tr');
-            noResultsPlaceholder.className = 'filter-no-results-message';
+    const spotDateInput = document.getElementById("spotFilterDate");
+    const spotLocationInput = document.getElementById("spotFilterLocation");
+    const spotDeviceInput = document.getElementById("spotFilterDevice");
 
-            function showMessage(message, iconClass = 'fa-calendar-day') {
-                noResultsPlaceholder.innerHTML = `
-                    <td colspan="5"
-                        class="p-8 text-center text-slate-400 font-medium italic bg-slate-50/50">
-                        <i class="fa-solid ${iconClass} mr-2 text-amber-400"></i>
-                        ${message}
-                    </td>
-                `;
+    const logsBody = document.querySelector("#logsTable tbody");
+    const hotspotsBody = document.querySelector("#hotspotsTable tbody");
 
-                if (!tableBody.contains(noResultsPlaceholder)) {
-                    tableBody.appendChild(noResultsPlaceholder);
-                }
-            }
+    let allLogs = [];
+    let allHotspots = [];
 
-            function executeFilter() {
-                const dateVal = dateIn.value.trim();
-                const locVal = locIn.value.toLowerCase().trim();
-                const devVal = devIn.value.toLowerCase().trim();
+    function showMessage(tableBody, message) {
+        tableBody.innerHTML = "";
 
-                if (noResultsPlaceholder.parentNode) {
-                    noResultsPlaceholder.remove();
-                }
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
 
-                // Do not display any records until a date is selected.
-                if (!dateVal) {
-                    rows.forEach(row => row.classList.add('hidden'));
+        row.className = "empty-placeholder";
+        cell.colSpan = 5;
+        cell.className =
+            "p-8 text-center text-slate-400 font-normal italic";
+        cell.textContent = message;
 
-                    showMessage('Select a date to display the records for that day.');
-                    return;
-                }
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+    }
 
-                let visibleCount = 0;
+    function addCell(row, value, className = "p-4") {
+        const cell = document.createElement("td");
+        cell.className = className;
+        cell.textContent = value ?? "";
+        row.appendChild(cell);
+    }
 
-                rows.forEach(row => {
-                    const dateCell = row.querySelector('.data-date');
-                    const locationCell = row.querySelector('.data-location');
-                    const deviceCell = row.querySelector('.data-device');
+    function renderLogs() {
+        logsBody.innerHTML = "";
 
-                    const rowDate = dateCell
-                        ? dateCell.textContent.trim()
-                        : '';
+        const locationFilter = locationInput.value.toLowerCase().trim();
+        const deviceFilter = deviceInput.value.toLowerCase().trim();
 
-                    const rowLoc = locationCell
-                        ? locationCell.textContent.toLowerCase().trim()
-                        : '';
+        const filteredLogs = allLogs.filter(log => {
+            const location = (log.location || "").toLowerCase();
+            const device = (log.device_id || "").toLowerCase();
 
-                    const rowDev = deviceCell
-                        ? deviceCell.textContent.toLowerCase().trim()
-                        : '';
+            return location.includes(locationFilter) &&
+                   device.includes(deviceFilter);
+        });
 
-                    const matchesDate = rowDate === dateVal;
-                    const matchesLoc = !locVal || rowLoc.includes(locVal);
-                    const matchesDev = !devVal || rowDev.includes(devVal);
-
-                    if (matchesDate && matchesLoc && matchesDev) {
-                        row.classList.remove('hidden');
-                        visibleCount++;
-                    } else {
-                        row.classList.add('hidden');
-                    }
-                });
-
-                // Update hotspot ranking after filtering.
-                if (isHotspotTable) {
-                    let dynamicRank = 1;
-
-                    rows.forEach(row => {
-                        if (!row.classList.contains('hidden')) {
-                            const rankCell = row.querySelector('.dynamic-rank');
-
-                            if (rankCell) {
-                                rankCell.textContent = dynamicRank++;
-                            }
-                        }
-                    });
-                }
-
-                // Display a message if no records match.
-                if (visibleCount === 0) {
-                    showMessage(
-                        'No records found for the selected date and filters.',
-                        'fa-circle-exclamation'
-                    );
-                }
-            }
-
-            // Apply filters as the user types or selects a date.
-            [dateIn, locIn, devIn].forEach(element => {
-                element.addEventListener('input', executeFilter);
-                element.addEventListener('change', executeFilter);
-            });
-
-            // Initial state: hide every record until a date is selected.
-            executeFilter();
+        if (filteredLogs.length === 0) {
+            showMessage(logsBody, "No violation records found.");
+            return;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setupTableFiltering(
-                'logsTable',
-                'log-row',
-                'logFilterDate',
-                'logFilterLocation',
-                'logFilterDevice',
-                false
+        filteredLogs.forEach(log => {
+            const row = document.createElement("tr");
+            row.className = "hover:bg-slate-50/80 transition-colors";
+
+            const timestamp = log.timestamp || "";
+
+            addCell(row, timestamp.substring(0, 10),
+                "p-4 pl-6 text-slate-500");
+
+            addCell(row, timestamp.substring(11, 16),
+                "p-4 text-slate-500");
+
+            addCell(row, log.tracking_id || "N/A",
+                "p-4 font-bold text-slate-700");
+
+            addCell(row, log.location || "N/A", "p-4");
+
+            addCell(row, log.device_id || "N/A",
+                "p-4 pr-6 text-slate-600 font-mono");
+
+            logsBody.appendChild(row);
+        });
+    }
+
+    function renderHotspots() {
+        hotspotsBody.innerHTML = "";
+
+        const locationFilter =
+            spotLocationInput.value.toLowerCase().trim();
+
+        const deviceFilter =
+            spotDeviceInput.value.toLowerCase().trim();
+
+        const filteredHotspots = allHotspots.filter(spot => {
+            const location = (spot.location || "").toLowerCase();
+            const device = (spot.device_id || "").toLowerCase();
+
+            return location.includes(locationFilter) &&
+                   device.includes(deviceFilter);
+        });
+
+        if (filteredHotspots.length === 0) {
+            showMessage(hotspotsBody, "No hotspot records found.");
+            return;
+        }
+
+        filteredHotspots.forEach((spot, index) => {
+            const row = document.createElement("tr");
+            row.className = "hover:bg-slate-50/80 transition-colors";
+
+            addCell(row, spot.timestamp.substring(0, 10),
+                "p-4 pl-6 text-slate-500");
+
+            addCell(row, index + 1,
+                "p-4 font-black text-blue-600");
+
+            addCell(row, spot.location || "N/A",
+                "p-4 font-bold");
+
+            addCell(row, spot.count,
+                "p-4 font-black text-slate-700 bg-blue-50/50");
+
+            addCell(row, spot.device_id || "N/A",
+                "p-4 pr-6 text-slate-600 font-mono");
+
+            hotspotsBody.appendChild(row);
+        });
+    }
+
+    async function loadSelectedDate() {
+        const selectedDate = dateInput.value || spotDateInput.value;
+
+        if (!selectedDate) {
+            allLogs = [];
+            allHotspots = [];
+
+            showMessage(logsBody,
+                "Select a date to display the records for that day.");
+
+            showMessage(hotspotsBody,
+                "Select a date to display the hotspot records.");
+
+            return;
+        }
+
+        // Keep both date filters synchronized.
+        dateInput.value = selectedDate;
+        spotDateInput.value = selectedDate;
+
+        showMessage(logsBody, "Loading records...");
+        showMessage(hotspotsBody, "Loading hotspots...");
+
+        try {
+            const response = await fetch(
+                "{{ url_for('data_logs.get_logs_data') }}" +
+                "?date=" + encodeURIComponent(selectedDate)
             );
 
-            setupTableFiltering(
-                'hotspotsTable',
-                'spot-row',
-                'spotFilterDate',
-                'spotFilterLocation',
-                'spotFilterDevice',
-                true
-            );
-        });
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.error || "Unable to load records."
+                );
+            }
+
+            allLogs = result.logs || [];
+            allHotspots = result.hotspots || [];
+
+            renderLogs();
+            renderHotspots();
+
+        } catch (error) {
+            console.error("Data Logs loading error:", error);
+
+            allLogs = [];
+            allHotspots = [];
+
+            showMessage(logsBody,
+                "Unable to load records. Please try again.");
+
+            showMessage(hotspotsBody,
+                "Unable to load hotspots. Please try again.");
+        }
+    }
+
+    // Date selection loads records from Supabase.
+    dateInput.addEventListener("change", loadSelectedDate);
+    spotDateInput.addEventListener("change", loadSelectedDate);
+
+    // Location and device filters work independently.
+    locationInput.addEventListener("input", renderLogs);
+    deviceInput.addEventListener("input", renderLogs);
+
+    spotLocationInput.addEventListener("input", renderHotspots);
+    spotDeviceInput.addEventListener("input", renderHotspots);
+
+});
+
     </script>
 
 </body>

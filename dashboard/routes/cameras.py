@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from src.database import get_supabase
+from dashboard.auth_utils import login_required, roles_required
+import logging
 
 cameras_bp = Blueprint("cameras", __name__)
 
@@ -15,6 +17,7 @@ def default_device(device_id, location):
 
 
 @cameras_bp.route("/")
+@login_required
 def index():
     try:
         supabase = get_supabase()
@@ -47,6 +50,7 @@ def index():
 
 
 @cameras_bp.route("/update_location", methods=["POST"])
+@roles_required("admin", "developer")
 def update_location():
     try:
         data = request.get_json()
@@ -63,5 +67,10 @@ def update_location():
 
         return jsonify({"success": True})
 
-    except Exception as error:
-        return jsonify({"success": False, "error": str(error)}), 500
+    except Exception:
+        logging.exception("Failed to update camera location.")
+
+    return jsonify({
+        "success": False,
+        "error": "Unable to update camera location. Please try again."
+    }), 500

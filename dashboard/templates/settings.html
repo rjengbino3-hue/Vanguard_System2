@@ -46,10 +46,14 @@
                     <span>Settings</span>
                 </a>
                 <div class="w-full h-px bg-slate-100 my-1"></div>
-                <a href="/logout" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
-                    <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
-                    <span>Log Out</span>
-                </a>
+                <form action="/logout" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <button type="submit" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-all w-full text-left">
+        <i class="fa-solid fa-sign-out-alt w-4 text-center"></i>
+        <span>Log Out</span>
+    </button>
+</form>
             </div>
         </div>
     </header>
