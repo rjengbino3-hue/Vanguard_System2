@@ -21,18 +21,12 @@
          TOP NAV HEADER BAR (Pasted Exact Asset Schema)
          ========================================================================== -->
     <header class="w-full bg-[#112240] h-20 flex items-center justify-between px-6 border-b border-[#1d5073] shrink-0">
-        <div class="flex items-center space-x-0">
-            <!-- 1. LTO Circular Brand Frame -->
-            <div class="h-15 w-15 bg-white rounded-full flex items-center justify-center border border-blue-400 shadow-sm overflow-hidden shrink-0">
-                <img src="{{ url_for('static', filename='assets/LTO_LOGO.png') }}" alt="LTO Logo" class="h-full w-full object-cover p-0 transform scale-115">
-            </div>
-
             <!-- 2. Vanguard Logo Frame -->
             <div class="h-25 w-25 flex items-center justify-center shrink-0 -ml-2">
                 <img src="{{ url_for('static', filename='assets/Vanguard_Logo.png') }}" alt="Vanguard Logo" class="h-full w-full object-contain">
             </div>
             
-            <div class="leading-tight">
+            <div class="leading-tight flex-1 ml-4 text-left">
                 <h1 class="text-[#c8edff] font-extrabold text-xl tracking-wider uppercase">Vanguard Analytics Portal</h1>
                 <p class="text-white text-xs font-bold tracking-widest uppercase">Helmetless Violation Log and Traffic Management System</p>
             </div>
